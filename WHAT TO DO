@@ -1,0 +1,27 @@
+Authetnicate:
+
+What to do:
+
+1. zorgen dat bij iedere request voor een email een response wordt gegeven. Deze response moet door de frontend opgevangen worden en daar moet een keuze door getriggert worden.
+
+2. Api herschrijven voor de wijzigin in punt 1.
+
+3. Constraint toevoegen die sessie op tijd checkt.
+
+4. 
+
+2. App functie implementeren --> dit pas doen zodra email en sms compleet werken met de front end.
+
+Stappenplan api -->
+
+Login met username en wachtwoord + kies de mfa methodes
+
+if true --> dan response met daarin de volgende mfa methode met bijbehorende url:
+
+pagina opent in frontend
+
+code wordt verstuurd naar user.
+
+User vult code in en verstuurt request naar backend
+
+backend controleert de request als deze goed is wordt er weer een responde gegeven en krijgt de gebruiker of een token of wordt de volgende mfa sessie gestart.
