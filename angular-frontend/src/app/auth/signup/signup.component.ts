@@ -25,10 +25,7 @@ export class SignupComponent implements OnInit {
       password: ['', Validators.compose([Validators.required, Validators.minLength(5)])],
       email: ['', Validators.required],
       fullName: ['', Validators.required],
-      countryCode: ['', Validators.required],
-      mobilePhoneNumber: ['', Validators.required]
     });
-
   }
 
    createUser(formValues) {

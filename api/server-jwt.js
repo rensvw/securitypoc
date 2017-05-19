@@ -172,7 +172,7 @@ const loginWithMFA = (request, reply) => {
     app: app
   }, function (err, respond) {
     if (err) {
-      return reply(Boom.badRequest(respond(err)));
+      return reply("yolo");
     } else if (respond.succes) {
       if(respond.returnToken){
         return reply({
@@ -182,7 +182,12 @@ const loginWithMFA = (request, reply) => {
         });
       }
       else{
-        return reply(respond);
+        return reply({
+          succes: respond.succes,
+          message: respond.message,
+          redirectTo: respond.redirectTo,
+          uuid: respond.uuid
+        });
       }
     } else if (!respond.succes) {
       return reply(Boom.unauthorized("Username or password is wrong!"));
@@ -234,14 +239,10 @@ const signUp = (request, reply) => {
   let email = request.payload.email;
   let fullName = request.payload.fullName;
   let password = request.payload.password;
-  let countryCode = request.payload.countryCode;
-  let mobilePhoneNumber = request.payload.mobilePhoneNumber;
   server.seneca.act("role:auth,cmd:signup", {
     email: email,
     fullName: fullName,
     password: password,
-    countryCode: countryCode,
-    mobilePhoneNumber: mobilePhoneNumber
   }, function (err, respond) {
     if (err) {
       return reply(Boom.badRequest(respond(err, null)));
@@ -419,9 +420,7 @@ const verifyTOTPCodeAndLogin = (request, reply) => {
           payload: {
             email: Joi.string().email().required(),
             password: Joi.string().min(2).max(200).required(),
-            fullName: Joi.string().min(2).max(200).required(),
-            countryCode: Joi.string().min(2).max(5).required(),
-            mobilePhoneNumber: Joi.string().min(2).max(15).required()
+            fullName: Joi.string().min(2).max(200).required()
           }
         },
         handler: signUp,

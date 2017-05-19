@@ -53,24 +53,6 @@ server.route({
 })
 
 server.route({
-  method: "POST", path: "/api/login-email",
-  handler: {
-    wo: {
-      passThrough: true
-    }
-  }
-})
-
-server.route({
-  method: "POST", path: "/api/login-sms",
-  handler: {
-    wo: {
-      passThrough: true
-    }
-  }
-})
-
-server.route({
   method: "GET", path: "/api/logout",
   handler: {
     wo: {
@@ -99,15 +81,6 @@ server.route({
 
 server.route({
   method: "POST", path: "/api/verify-sms",
-  handler: {
-    wo: {
-      passThrough: true
-    }
-  }
-})
-
-server.route({
-  method: "POST", path: "/api/login-app",
   handler: {
     wo: {
       passThrough: true

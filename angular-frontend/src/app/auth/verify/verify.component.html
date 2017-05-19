@@ -2,7 +2,7 @@
   <h3 class="card-header">{{pageTitle}}</h3>
   <div class="card-block">
 
-   <form #loginForm="ngForm" (ngSubmit)="authenticate(loginForm.value)" autocomplete="off" novalidate>
+   <form #loginForm="ngForm" (ngSubmit)="verify(loginForm.value)" autocomplete="off" novalidate>
     <div class="form-group">
       <label for="code">Please enter the code you received!</label>
       <input required (ngModel)="code" name="code" id="code" type="text" class="form-control" placeholder="code" />

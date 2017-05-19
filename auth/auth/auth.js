@@ -18,8 +18,6 @@ module.exports = function auth(options) {
         email: email,
         fullName: fullName,
         password: hash.password,
-        countryCode: countryCode,
-        mobilePhoneNumber: mobilePhoneNumber
       });
     })
     .then((user) => {

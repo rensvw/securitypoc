@@ -43,10 +43,12 @@ module.exports = function email(options) {
             .then((user) => {
                 this.user = user
                 if(this.user.succes){
+                    console.log(this.user)
                     respond({
                         uuid: this.user.uuid,
                         message: "The code has been sent to your email and a new email session has been started!",
-                        redirectTo: "verifyEmailPage"
+                        redirectTo: "verifyEmailPage",
+                        succes: true
                     });
                 }
                 else if(!user.succes){

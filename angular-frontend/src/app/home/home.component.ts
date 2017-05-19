@@ -14,7 +14,7 @@ export class HomeComponent implements OnInit {
   constructor(private _authService: AuthService) { }
 
   ngOnInit() {
-    this.fullName = this._authService.currentUser.fullName;
+
 
   }
 

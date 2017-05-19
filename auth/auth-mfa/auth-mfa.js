@@ -14,48 +14,30 @@ module.exports = function auth(options) {
       })
       .then((user) => {
         if (user.succes) {
-          return act("role:hash,cmd:comparePasswords", {
-              password: msg.password,
-              hash: user.password
-            })
+          return act("role:hash,cmd:comparePasswords", {password: msg.password,hash: user.password})
             .then((authenticated) => {
-              if (authenticated.succes) {
-
-                return act("entity:user-mfa,crud:user",{
-                  email: msg.email,
-                  mail: msg.mail,
-                  sms: msg.sms,
-                  app: msg.app
-                })
-                .then((userMFASession)=>{
-                  console.log(userMFASession);
-                  return act("role:auth,mfa:check",{
-                    email: msg.email,
-                    uuid: userMFASession.uuid
-                  })
-                  .then((data)=>{
+                  if (authenticated.succes) {
+                    return act("entity:user-mfa,crud:user",{email: msg.email,mail: msg.mail,sms: msg.sms,app: msg.app})
+                .then((userMFASession) => {
+                    console.log(userMFASession);
+                    return act("role:auth,mfa:check",{email: msg.email,uuid: userMFASession.uuid})
+                .then((data)=>{
                     return respond(null,data);
-                  })
-                  .catch((err)=>{
-                    return respond(err,null);
                   })
                 })
                 .catch((err)=>{
-                  return respond(err,null);
-                })
-              } 
-              else {
-                return respond(null,authenticated);
-              }
-            })
+                    return respond(err,null);
+                  });
+                } 
+                else {
+                  return respond(null,authenticated);
+                }
+              })
             .catch((err) => {
               return respond(err);
             });
         } else {
-          return respond({
-            succes: false,
-            message: "Username or password is incorrect!"
-          });
+          return respond({succes: false,message: "Username or password is incorrect!"});
         }
       })
       .catch((err) => {

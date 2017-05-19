@@ -24,7 +24,6 @@ export class LoginComponent implements OnInit {
 
   ngOnInit() {
     this.optionsModel = [2];
-
     this.mySettings = {
     enableSearch: true,
     checkedStyle: 'fontawesome',
@@ -51,21 +50,35 @@ export class LoginComponent implements OnInit {
 ];
  console.log(this.optionsModel);
   }
+
+  
  onChange() {
         console.log(this.optionsModel);
     }
   authenticate(formValues){
     this.credentials = {
       email: formValues.email,
-      password: formValues.password
+      password: formValues.password,
+      sms: 1,
+      mail: 1,
+      app: 1
     }
     let loginOptions = this.optionsModel;
     if(loginOptions.length === 1 && loginOptions[0] === 2){
       this._authService.authenticate(this.credentials);
     }
     else{
-      this._authService.authenticateMfa(this.credentials,this.optionsModel);
-    }
+        if(loginOptions.includes(3)){
+          this.credentials.mail = 0;
+        }
+        else if(loginOptions.includes(4)){
+          this.credentials.sms = 0;
+        }
+        else if(loginOptions.includes(5)){
+          this.credentials.app = 0;
+        }
+       this._authService.authenticate(this.credentials);     
+      }
     }
   };
 
