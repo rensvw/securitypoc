@@ -10,11 +10,9 @@ module.exports = function auth(options) {
     let email = msg.email;
     let fullName = msg.fullName;
     let password = msg.password;
-    let countryCode = msg.countryCode;
-    let mobilePhoneNumber = msg.mobilePhoneNumber;
     act("role:hash,cmd:newHash",{ password: password})
     .then((hash) => {
-      return act("role:user,cmd:create,checkExistingUser:true", {
+      return act("entity:user,create:new", {
         email: email,
         fullName: fullName,
         password: hash.password,
@@ -33,7 +31,7 @@ module.exports = function auth(options) {
     let email = msg.email;
     let password = msg.password;
     let seneca = this;
-    act("role:user,cmd:get", {
+    act("entity:user,get:email", {
         email: email
       })
       .then((user) => {

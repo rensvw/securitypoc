@@ -178,6 +178,7 @@ const loginWithMFA = (request, reply) => {
         return reply({
           succes: respond.succes,
           message: respond.message,
+          redirectTo: 'home',
           token: createToken(respond.user)
         });
       }
@@ -215,6 +216,7 @@ const verifySMSCodeAndLogin = (request, reply) => {
         return reply({
           succes: respond.succes,
           message: respond.message,
+          redirectTo: "home",          
           token: createToken(respond.user)
         });
       }
@@ -252,6 +254,23 @@ const signUp = (request, reply) => {
   });
 };
 
+const signUpSMS = (request, reply) => {
+  let email = request.payload.email;
+  let fullName = request.payload.fullName;
+  let password = request.payload.password;
+  server.seneca.act("role:auth,cmd:signup", {
+    email: email,
+    fullName: fullName,
+    password: password,
+  }, function (err, respond) {
+    if (err) {
+      return reply(Boom.badRequest(respond(err, null)));
+    } else {
+      return reply(respond);
+    }
+  });
+};
+
 
 const verifyEmailCodeAndLogin = (request, reply) => {
   if (request.auth.isAuthenticated) {
@@ -268,10 +287,12 @@ const verifyEmailCodeAndLogin = (request, reply) => {
     if (err) {
       reply(err);
     } else if (respond.succes) {
+      console.log(respond);
       if(respond.returnToken){
         return reply({
           succes: respond.succes,
           message: respond.message,
+          redirectTo: "home",
           token: createToken(respond.user)
         });
       }
@@ -305,6 +326,7 @@ const verifyTOTPCodeAndLogin = (request, reply) => {
         return reply({
           succes: respond.succes,
           message: respond.message,
+          redirectTo: "home",          
           token: createToken(respond.user)
         });
       }

@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, Params } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
 import { ICodeCredentials } from '../../auth/codeCredentials';
+import {FormGroup, FormControl, Validators, FormBuilder, AbstractControl } from '@angular/forms';
+import {Location} from '@angular/common';
 
 @Component({
   selector: 'app-verify',
@@ -12,14 +14,20 @@ export class VerifyComponent implements OnInit {
 
   constructor(private route: ActivatedRoute,
     private router: Router,
-    private _authService: AuthService) {}
+    private _authService: AuthService,
+    private _formBuilder: FormBuilder,
+    private _location: Location
+    ) {}
 
     uuid;
     verifyType;
     codeCredentials;
-
+    verifyForm;
 
   ngOnInit() {
+    this.verifyForm = this._formBuilder.group({
+      code: ['', Validators.compose([Validators.required, Validators.minLength(6), Validators.maxLength(6)])],
+    });
     this.route
       .queryParams
       .subscribe((params: Params) => {
@@ -31,7 +39,12 @@ export class VerifyComponent implements OnInit {
         this.verifyType = params['verify'];       
     });
     
+    
   }
+
+  goBack(): void {
+        this._location.back();
+    }
 
    verify(formValues){
     this.codeCredentials = {
@@ -39,10 +52,8 @@ export class VerifyComponent implements OnInit {
       code: formValues.code,
       verifyType: this.verifyType
     }
-    console.log(this.verifyType)
-    console.log(this.uuid)
-    
-       this._authService.verify(this.codeCredentials);     
+       this._authService.verify(this.codeCredentials);  
+       this.verifyForm.reset()
       };
 
 }

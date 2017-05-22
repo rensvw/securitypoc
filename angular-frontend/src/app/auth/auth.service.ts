@@ -23,6 +23,7 @@ export class AuthService {
     private uuid;
     private redirectTo: string;
     private url;
+    private succes;
 
 
     constructor(private _http: Http, private _router: Router) { }
@@ -30,9 +31,7 @@ export class AuthService {
     authenticate(credentials){
         const headers      = new Headers({ 'Content-Type': 'application/json' }); // ... Set content type to JSON
         const options       = new RequestOptions({ headers: headers }); // Create a request option
-        if(credentials.type == 'verifySMSPage'){
-
-        }
+        console.log(credentials)
         return this._http.post(this._authenticateUrl, credentials)
             .map(res => res.json())
             .subscribe(
@@ -46,7 +45,7 @@ export class AuthService {
         },
             error => console.log(error),
         () => { 
-            if(this.redirectTo == null){
+            if(this.redirectTo == 'home'){
                 this._router.navigate(['home']);                
             }
             else if(this.redirectTo == "verifyEmailPage"){
@@ -78,16 +77,23 @@ export class AuthService {
             .subscribe(
         data => {
             this.redirectTo = data.redirectTo;
+            this.succes = data.succes;
             this.uuid = data.uuid;
-            console.log(data)
             if(data.token){
+                console.log("TOKEN:",data.token);
                 localStorage.setItem('token', data.token);
             }
         },
             error => console.log(error),
         () => { 
-            if(this.redirectTo == null){
-                this._router.navigate(['home']);                
+            if(!this.succes){
+                return {
+                    succes: false,
+                    message: "The code is incorrect!"
+                }           
+            }
+            else if(this.redirectTo == 'home'){
+                this._router.navigate(['home']);    
             }
             else if(this.redirectTo == "verifyEmailPage"){
                 this._router.navigate(['verify'],{ queryParams: { uuid: this.uuid, verify: "email" } });

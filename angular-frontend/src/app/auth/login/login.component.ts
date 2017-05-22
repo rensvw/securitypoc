@@ -68,16 +68,18 @@ export class LoginComponent implements OnInit {
       this._authService.authenticate(this.credentials);
     }
     else{
+      console.log(loginOptions)
         if(loginOptions.includes(3)){
           this.credentials.mail = 0;
         }
-        else if(loginOptions.includes(4)){
+        if(loginOptions.includes(4)){
           this.credentials.sms = 0;
         }
-        else if(loginOptions.includes(5)){
+        if(loginOptions.includes(5)){
           this.credentials.app = 0;
         }
-       this._authService.authenticate(this.credentials);     
+       this._authService.authenticate(this.credentials);   
+       console.log(this.credentials)  
       }
     }
   };
