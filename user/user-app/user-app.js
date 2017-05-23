@@ -1,17 +1,12 @@
-module.exports = function user( options ) {
+module.exports = function userApp( options ) {
 
 const Promise = require("bluebird");
 var act = Promise.promisify(this.act, {context: this});
 
-
-
-
 function getUserWithKey(msg, respond) {
-  var user = this.make$("userapp");
+  var userApp = this.make$("userApp");
   var email = msg.email;
-  user.load$({
-    email: email
-  }, function (err, user) {
+  userApp.load$({email: email}, function (err, user) {
     if (err) {
       respond(err, null);
     }
@@ -33,11 +28,9 @@ function getUserWithKey(msg, respond) {
 
 //Creates an user, but first checks of an user already exists with the same email.
 function createUserWithKeyWhileCheckingForExistingUser(msg, respond) {
-  var user = this.make$("userapp");
-  user.email = msg.email;
-  this.act("role:userapp,cmd:get,type:totp", {
-    email: user.email
-  }, function (err, newUser) {
+  var userApp = this.make$("userApp");
+  userApp.email = msg.email;
+  this.act("entity:user-app,get:key", {email: userApp.email}, function (err, newUser) {
     if (err) {
       respond(err, null);
     } else if (newUser.succes) {
@@ -46,8 +39,8 @@ function createUserWithKeyWhileCheckingForExistingUser(msg, respond) {
         message: "Email does already exist!"
       });
     } else if (!newUser.succes) {
-          user.key = msg.key;
-          user.save$((err, user) => {
+          userApp.key = msg.key;
+          userApp.save$((err, user) => {
             if (err) {
               respond(err, null);
             }
@@ -63,8 +56,8 @@ function createUserWithKeyWhileCheckingForExistingUser(msg, respond) {
   });
 }
 
-this.add({role:"userapp",cmd:"create",type:"totp"}, createUserWithKeyWhileCheckingForExistingUser);
-this.add({role:"userapp",cmd:"get",type:"totp"}, getUserWithKey);
+this.add({entity:"user-app",create:"user"}, createUserWithKeyWhileCheckingForExistingUser);
+this.add({entity:"user-app",get:"key"}, getUserWithKey);
 
 
 

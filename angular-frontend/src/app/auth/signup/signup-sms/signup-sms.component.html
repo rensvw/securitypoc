@@ -1,0 +1,26 @@
+<div class="card">
+  <h3 class="card-header">{{pageTitle}}</h3>
+  <div class="card-block">
+   
+    
+    <form [formGroup]="userForm" (ngSubmit)="createUser(userForm.value)">
+
+       <div class="form-group" >
+        <label>Country Code:</label>
+        <input class="form-control" type="text" placeholder="Country Code" [formControl]="userForm.controls['countryCode']" >
+      </div>
+          
+      <div class="form-group" >
+        <label>Phone Number:</label>
+        <input class="form-control" type="text" placeholder="Phone Number" [formControl]="userForm.controls['mobilePhoneNumber']" >
+      </div>
+
+      <button type="button" class="btn btn-primary" (click)="goBack()">Back</button>
+      <button type="submit" [disabled]="userForm.invalid" class="btn btn-primary pull-right"><i *ngIf='showSpinner'class="fa fa-spinner fa-spin"></i> Next</button>
+      </form>
+      
+      
+  </div>
+</div>
+
+

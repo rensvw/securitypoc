@@ -9,7 +9,7 @@ module.exports = function auth(options) {
   this.add({role:"auth",mfa:"check"}, checkFlagsSession);
 
   function authenticateAndSetFlags(msg, respond) {
-    act("role:user,cmd:get", {
+    act("entity:user,get:email", {
         email: msg.email
       })
       .then((user) => {
@@ -79,18 +79,12 @@ function checkFlagsSession(msg, respond) {
         })
       }
       else if(user.flags.app == null || user.flags.app == 0){
-        act("role:sms,cmd:save,send:false",{
-          email: msg.email,
-          phoneNumber: msg.phoneNumber,
-          countryCode: msg.countryCode,
-          uuid: user.uuid
-        })
-        .then((response)=>{
-          return respond(response);
-        })
-        .catch((err)=>{
-          return respond(err);          
-        })
+        return respond({
+          succes: true,
+          message: "Authenticator app session started!",
+          uuid: user.uuid,
+          redirectTo: "verifyAppPage"
+        });
       }
       else {
        return respond({

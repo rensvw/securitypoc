@@ -17,14 +17,9 @@ seneca
     listen: [
       { 
       pins: [
-      "role:user,cmd:create,checkExistingUser:true", 
-      "role:user,cmd:create",
+      "entity:user,create:new",
       "entity:user,get:uuid",
-      
-      "role:user,cmd:get",
-      "role:user,cmd:get,param:uuid",
-      "role:user,cmd:update,param:uuid",      
-      "role:user,cmd:update,service:2fa"]
+      "entity:user,get:email",]
     }],
     host:HOST,
     bases:BASES,

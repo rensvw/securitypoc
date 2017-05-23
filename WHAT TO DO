@@ -25,3 +25,18 @@ code wordt verstuurd naar user.
 User vult code in en verstuurt request naar backend
 
 backend controleert de request als deze goed is wordt er weer een responde gegeven en krijgt de gebruiker of een token of wordt de volgende mfa sessie gestart.
+
+
+registreren gebruiker:
+
+naam + user + pass --> post
+indien correct ga naar pagina 2 --> vul in je telefoonnummer en country code. --> post --> verify met sms code
+indien correct ga naar pagina 3 --> scan QR code met telefoonnummer --> verify met code --> post naar backend.
+
+
+Hoe sla ik dit op:
+
+User.verified = {
+    sms: 1
+    app: 1
+}

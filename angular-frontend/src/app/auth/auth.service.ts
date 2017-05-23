@@ -24,6 +24,7 @@ export class AuthService {
     private redirectTo: string;
     private url;
     private succes;
+    private email;
 
 
     constructor(private _http: Http, private _router: Router) { }
@@ -45,14 +46,19 @@ export class AuthService {
         },
             error => console.log(error),
         () => { 
-            if(this.redirectTo == 'home'){
-                this._router.navigate(['home']);                
-            }
-            else if(this.redirectTo == "verifyEmailPage"){
-                this._router.navigate(['verify'],{ queryParams: { uuid: this.uuid, verify: "email" } });
-            }
-            else if(this.redirectTo == "verifySMSPage"){
-                this._router.navigate(['verify'],{ queryParams: { uuid: this.uuid, verify: "sms" } });
+            switch(this.redirectTo){
+                case "home":
+                    this._router.navigate(['home']);    
+                    break;
+                case "verifyEmailPage":
+                    this._router.navigate(['verify'],{ queryParams: { uuid: this.uuid, verify: "email" } });
+                    break;
+                case "verifySMSPage":
+                    this._router.navigate(['verify'],{ queryParams: { uuid: this.uuid, verify: "sms" } });
+                    break;
+                case "verifyAppPage":
+                    this._router.navigate(['verify'],{ queryParams: { uuid: this.uuid, verify: "app" } });
+                    break;
             }
         }
       );
@@ -61,17 +67,19 @@ export class AuthService {
     verify(credentials){
         const headers      = new Headers({ 'Content-Type': 'application/json' }); // ... Set content type to JSON
         const options       = new RequestOptions({ headers: headers }); // Create a request option
-
-        if(credentials.verifyType == "email"){
-            this.url = this._verifyEmailUrl;
-        }
-        else if(credentials.verifyType == "sms"){
-            this.url = this._verifySMSUrl
-        }
-        else if(credentials.verifyType == "app"){
-            this.url = this._verifyAppUrl
-        }
         
+        switch(credentials.verifyType){
+            case "email":
+                this.url = this._verifyEmailUrl;
+                break;
+            case "sms":
+                this.url = this._verifySMSUrl;
+                break;
+            case "app":
+                this.url = this._verifyAppUrl;
+                break;
+        }
+               
         return this._http.post(this.url, {code: credentials.code, uuid: credentials.uuid})
             .map(res => res.json())
             .subscribe(
@@ -92,24 +100,79 @@ export class AuthService {
                     message: "The code is incorrect!"
                 }           
             }
-            else if(this.redirectTo == 'home'){
-                this._router.navigate(['home']);    
+            switch(this.redirectTo){
+                case "home":
+                    this._router.navigate(['home']);    
+                    break;
+                case "verifyEmailPage":
+                    this._router.navigate(['verify'],{ queryParams: { uuid: this.uuid, verify: "email" } });
+                    break;
+                case "verifySMSPage":
+                    this._router.navigate(['verify'],{ queryParams: { uuid: this.uuid, verify: "sms" } });
+                    break;
+                case "verifyAppPage":
+                    this._router.navigate(['verify'],{ queryParams: { uuid: this.uuid, verify: "app" } });
+                    break;
             }
-            else if(this.redirectTo == "verifyEmailPage"){
-                this._router.navigate(['verify'],{ queryParams: { uuid: this.uuid, verify: "email" } });
+        }
+      );
+    }
+
+    verifySignup(credentials){
+        const headers      = new Headers({ 'Content-Type': 'application/json' }); // ... Set content type to JSON
+        const options       = new RequestOptions({ headers: headers }); // Create a request option
+        
+        switch(credentials.verifyType){
+            case "email":
+                this.url = this._verifyEmailUrl;
+                break;
+            case "sms":
+                this.url = this._verifySMSUrl;
+                break;
+            case "app":
+                this.url = this._verifyAppUrl;
+                break;
+        }
+               
+        return this._http.post(this.url, {code: credentials.code, email: credentials.email})
+            .map(res => res.json())
+            .subscribe(
+        data => {
+            this.redirectTo = data.redirectTo;
+            this.succes = data.succes;
+            this.email = data.email;
+        },
+            error => console.log(error),
+        () => { 
+            if(!this.succes){
+                return {
+                    succes: false,
+                    message: "The code is incorrect!"
+                }        
             }
-            else if(this.redirectTo == "verifySMSPage"){
-                this._router.navigate(['verify'],{ queryParams: { uuid: this.uuid, verify: "sms" } });
+            switch(this.redirectTo){
+                case "home":
+                    this._router.navigate(['home']);    
+                    break;
+                case "verifyEmailPage":
+                    this._router.navigate(['signup/verify'],{ queryParams: { email: this.email, verify: "email" } });
+                    break;
+                case "verifySMSPage":
+                    this._router.navigate(['signup/verify'],{ queryParams: { email: this.email, verify: "sms" } });
+                    break;
+                case "verifyAppPage":
+                    this._router.navigate(['signup/verify'],{ queryParams: { email: this.email, verify: "app" } });
+                    break;
             }
         }
       );
     }
 
     createUser(user): Observable < IUser > {
-  return this._http.post(this._signupUrl, user) // ...using post request
-    .map((res: Response) => res.json()) // ...and calling .json() on the response to return data
-    .catch((error: any) => Observable.throw(error.json().error || 'Server error')); //...errors if
-}
+        return this._http.post(this._signupUrl, user) // ...using post request
+            .map((res: Response) => res.json()) // ...and calling .json() on the response to return data
+            .catch((error: any) => Observable.throw(error.json().error || 'Server error')); //...errors if
+        }       
 
     private handleError(error: Response) {
         console.error(error);

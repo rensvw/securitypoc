@@ -241,7 +241,7 @@ const signUp = (request, reply) => {
   let email = request.payload.email;
   let fullName = request.payload.fullName;
   let password = request.payload.password;
-  server.seneca.act("role:auth,cmd:signup", {
+  server.seneca.act("role:auth,signup:email", {
     email: email,
     fullName: fullName,
     password: password,

@@ -12,8 +12,6 @@ import { HomeComponent } from "./home/home.component";
 import { FooterComponent } from "./footer/footer.component";
 import { AuthService } from "./auth/auth.service";
 import { AuthGuard } from "./auth/auth-guard.service";
-//import { AuthModule } from "./auth.module";
-import { EmitterService } from "./emitter.service";
 
 @NgModule({
   declarations: [
@@ -29,7 +27,7 @@ import { EmitterService } from "./emitter.service";
     AuthModule,
     AppRoutingModule,
   ],
-  providers: [AuthService, AuthGuard, EmitterService],
+  providers: [AuthService, AuthGuard],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

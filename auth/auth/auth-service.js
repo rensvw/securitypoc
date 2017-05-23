@@ -10,6 +10,10 @@ require("seneca")({tag: "auth-service"})
       { 
       pins: [
       "role:auth,cmd:signup", 
+      "role:auth,signup:email", 
+      "role:auth,check:verified", 
+      
+      
       "role:auth,cmd:authenticate,mfa:none",
       ]
     }],

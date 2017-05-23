@@ -139,6 +139,54 @@ module.exports = function auth(options) {
       })
   }
 
+  function verifyEmailCodeAtSignup(msg, respond) {
+    let uuid = msg.uuid;
+    let code = msg.code;
+    let seneca = this;
+    act("entity:user-email,get:uuid", {uuid: uuid})
+      .then((user) => {
+        if (!user) {
+          respond(user);
+        } else if (user) {
+          let newTime = moment(user.session.timeCreated).add(4, "m");
+          if (newTime > moment()) {
+            if (code == user.session.code) {
+              return act("entity:user-mfa,change:flags", {uuid: msg.uuid,mail: 1})
+                .then((data) => {
+                  if (data.succes) {
+                    return act("entity:user,update:flags", {email: data.email,mail: 1})
+                      .then((response)=>{
+                        return respond(response);
+                      })
+                      .catch((err)=>{
+                        return respond(err);
+                      })
+                  } else {
+                    return respond({succes: false,message: "Something went wrong in the database!"});
+                  }
+                })
+                .catch((err) => {
+                  respond(err);
+                })
+            } else {
+              respond({
+                succes: false,
+                message: "Code is incorrect!"
+              })
+            }
+          } else {
+            respond({
+              succes: false,
+              message: "you are to late!"
+            })
+          }
+        }
+      })
+      .catch(function (err) {
+        respond(err);
+      })
+  }
+
 
   this.add({role:"auth",cmd:"authenticate",mfa:"email"}, authenticateAndSendEmail);
   this.add({role:"auth",cmd:"verify",mfa:"email"}, verifyEmailCode);

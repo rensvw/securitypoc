@@ -88,10 +88,7 @@ module.exports = function flag( options ) {
           email: msg.email
         }, function (err, result) {
           if (!result) {
-            respond({
-              succes: false,
-              message: "User could not be found!"
-            });
+            respond({succes: false,message: "User could not be found!"});
           }
           result.data$({
             uuid: msg.uuid,
@@ -118,33 +115,15 @@ module.exports = function flag( options ) {
       })
       .then((user) => {
         if (user.succes) {
-          return act("entity:user-email,update:new", {
-              email: msg.email,
-              code: msg.code,
-              uuid: msg.uuid
-            })
-            .then((data) => {
-              return respond(null, data);
-            })
-            .catch((err) => {
-              return respond(err, null)
-            })
+          return act("entity:user-email,update:new", {email: msg.email,code: msg.code,uuid: msg.uuid})
+            .then((data) => {return respond(null, data);})
+            .catch((err) => {return respond(err, null)})
         } else if (!user.succes) {
-          return act("entity:user-email,create:new", {
-              email: msg.email,
-              uuid: msg.uuid,
-              code: msg.code || 0,
-            })
-            .then((data) => {
-              return respond(null, data);
-            })
-            .catch((err) => {
-              return respond(err, null)
-            })
+          return act("entity:user-email,create:new", {email: msg.email,uuid: msg.uuid,code: msg.code || 0,})
+            .then((data) => {return respond(null, data);})
+            .catch((err) => {return respond(err, null)})
         }
       })
-      .catch((err) => {
-        respond(err, null);
-      });
+      .catch((err) => {respond(err, null);});
   }
   }

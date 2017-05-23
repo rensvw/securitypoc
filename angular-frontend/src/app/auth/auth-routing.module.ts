@@ -4,18 +4,21 @@ import { AuthGuard } from './auth-guard.service';
 
 import { LoginComponent } from './login/login.component';
 import { ProfileComponent } from './profile/profile.component';
-import { SignupComponent } from './signup/signup.component';
+import { SignupComponent } from './signup/signup/signup.component';
+import { SignupAppComponent } from './signup/signup-app/signup-app.component';
+import { SignupSmsComponent } from './signup/signup-sms/signup-sms.component';
+import { SignupVerifyComponent } from './signup/signup-verify/signup-verify.component';
 import { VerifyComponent } from './verify/verify.component';
-
-
 
 @NgModule({
   imports: [RouterModule.forChild([
       { path: 'signup',  component: SignupComponent },
+      { path: 'signup/verify',  component: SignupVerifyComponent },
+      { path: 'signup/sms',  component: SignupSmsComponent },
+      { path: 'signup/app',  component: SignupAppComponent },
       { path: 'profile', canActivate: [AuthGuard], component: ProfileComponent },
       { path: 'login', component: LoginComponent },
       { path: 'verify', component: VerifyComponent },
-      
     ])],
   exports: [RouterModule],
   providers: [AuthGuard]

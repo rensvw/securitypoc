@@ -1,16 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, Params } from '@angular/router';
-import { AuthService } from '../../auth/auth.service';
-import { ICodeCredentials } from '../../auth/codeCredentials';
+import { AuthService } from '../../../auth/auth.service';
+import { ICodeCredentials } from '../../../auth/codeCredentials';
 import {FormGroup, FormControl, Validators, FormBuilder, AbstractControl } from '@angular/forms';
 import {Location} from '@angular/common';
 
 @Component({
-  selector: 'app-verify',
-  templateUrl: './verify.component.html',
-  styleUrls: ['./verify.component.css']
+  selector: 'app-signup-verify',
+  templateUrl: './signup-verify.component.html',
+  styleUrls: ['./signup-verify.component.css']
 })
-export class VerifyComponent implements OnInit {
+export class SignupVerifyComponent implements OnInit {
 
   constructor(private route: ActivatedRoute,
     private router: Router,
@@ -38,12 +38,10 @@ export class VerifyComponent implements OnInit {
       .subscribe((params: Params) => {
         this.verifyType = params['verify'];       
     });
-    
-    
   }
 
-  goBack(): void {
-        this.router.navigate(['login']);
+   goBack(): void {
+        this._location.back();
     }
 
    verify(formValues){

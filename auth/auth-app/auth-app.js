@@ -80,7 +80,7 @@ module.exports = function authenticatorAppAuth(option) {
         let uuid = msg.uuid;
         let code = msg.code;
         let seneca = this;
-        act("role:user,cmd:get,param:uuid", {
+        act("entity:user,get:uuid", {
                 uuid: uuid
             })
             .then((user) => {
@@ -88,79 +88,55 @@ module.exports = function authenticatorAppAuth(option) {
                 if (!user) {
                     respond(user);
                 } else if (user) {
-                    act("role:userapp,cmd:get,type:totp", {
-                            email: user.email
-                        })
-                        .then((key) => {
-                            if (!key.succes) {
-                                return respond({
-                                    succes: false,
-                                    message: "Please first connect the authenticator app to your account!"
-                                })
-                            } else {
-                                return act("role:userapp,cmd:get,type:totp", {
-                                        email: this.user.email
+                    act("entity:user-app,get:key", {email: user.email})
+                        .then((data) => {
+                                if (!data.succes) {
+                                    return respond({
+                                        succes: false,
+                                        message: "Please first connect the authenticator app to your account!"
                                     })
-                                    .then((data) => {
-                                        if (!data.key) {
-                                            console.log(data)
-                                            respond("Error, key not found")
-                                        } else {
-                                            let verify = authenticator.verifyToken(data.key.toString(), code.toString());
-                                            if (verify === null) {
-                                                return respond({
-                                                    succes: false,
-                                                    message: "Code is incorrect!"
-                                                });
-                                            } else if (verify.delta === 0) {
-                                                return respond({
-                                                    succes: true,
-                                                    user: {
-                                                        email: this.user.email,
-                                                        fullName: this.user.fullName
-                                                    },
-                                                    message: "Code is correct, welcome!"
-                                                });
-                                            } else if (verify.delta === -1) {
-                                                return respond({
-                                                    succes: false,
-                                                    message: "You are to late!"
-                                                });
-                                            }
-                                        }
-                                    })
-                                    .catch(function (err) {
-                                        respond(err);
-                                    })
-                            }
+                                } else {
+                                    let verify = authenticator.verifyToken(data.key.toString(), code.toString());
+                                    if (verify === null) {
+                                        return respond({
+                                            succes: false,
+                                            message: "Code is incorrect!"
+                                        });
+                                    } else if (verify.delta === 0) {
+                                        return respond({
+                                            succes: true,
+                                            user: {
+                                                email: this.user.email,
+                                                fullName: this.user.fullName
+                                            },
+                                            message: "Code is correct, welcome!"
+                                        });
+                                    } else if (verify.delta === -1) {
+                                        return respond({
+                                            succes: false,
+                                            message: "You are to late!"
+                                        });
+                                    }
+                                }
+                            })
+                            .catch(function (err) {
+                                respond(err);
+                            })
+                        }
 
                         }).catch((err) => {
                             respond(err);
                         })
 
-                }
-            }).catch((err) => {
-                respond(err);
-            })
-    }
+                        }
+
 
     function createUri(msg,respond){
         act("role:generate,cmd:totp-key")
         .then((data)=>{
-            return act("role:generate,cmd:totp-uri",{
-                email: msg.email,
-                key: data.key
-            })
-            .then((result)=>{
-                respond({
-                    uri: result.uri,
-                    secret: data.key,
-                    email: msg.email
-                });
-            })
-            .catch((err)=>{
-                respond(err);
-            });
+            return act("role:generate,cmd:totp-uri",{email: msg.email,key: data.key})
+                .then((result)=>{respond({uri: result.uri,secret: data.key,email: msg.email});})
+                .catch((err)=>{respond(err);});
         })
         .catch((err)=>{
             respond(err);
@@ -177,7 +153,7 @@ module.exports = function authenticatorAppAuth(option) {
                 message: "Code is incorrect!"
             });
         } else if (verify.delta === 0) {
-            act("role:userapp,cmd:create,type:totp",{
+            act("entity:user-app,create:user",{
                 email: msg.email,
                 key: secret
             })
@@ -198,26 +174,80 @@ module.exports = function authenticatorAppAuth(option) {
         }
     }
 
-    this.add({
-        role: "auth",
-        cmd: "authenticate",
-        mfa: "app"
-    }, authenticate);
-    this.add({
-        role: "auth",
-        cmd: "verify",
-        mfa: "app"
-    }, verifyToken);
-    this.add({
-        role: "auth",
-        cmd: "create",
-        mfa: "app",
-        url: "uri"
-    }, createUri);
-    this.add({
-        role: "auth",
-        cmd: "save",
-        mfa: "new-app",
-    }, verifyUriAndSaveToAccount);
+function verifyAppCode(msg, respond) {
+    let uuid = msg.uuid;
+    let code = msg.code;
+    let seneca = this;
+    act("entity:user-mfa,get:uuid", {
+            uuid: uuid
+        })
+        .then((user) => {
+            if (!user) {
+                return respond(null, user);
+            } else if (user) {
+                act("entity:user-app,get:key", {
+                        email: user.email
+                    })
+                    .then((data) => {
+                        if (!data.succes) {
+                            return respond({
+                                succes: false,
+                                message: "Please first connect the authenticator app to your account!"
+                            })
+                        } else {
+                            let verify = authenticator.verifyToken(data.key.toString(), code.toString());
+                            if (verify === null) {
+                                return respond({
+                                    succes: false,
+                                    message: "Code is incorrect!"
+                                });
+                            } else if (verify.delta === 0) {
+                                return act("entity:user-mfa,change:flags", {
+                                        uuid: msg.uuid,
+                                        app: 1
+                                    })
+                                    .then((data) => {
+                                        if (data.succes) {
+                                            act('role:auth,mfa:check', {
+                                                    uuid: msg.uuid
+                                                })
+                                                .then((check) => {
+                                                    return respond(check);
+                                                })
+                                                .catch((err) => {
+                                                    return respond(err);
+                                                });
+                                        } else {
+                                            return respond({
+                                                succes: false,
+                                                message: "Something wen't wrong in the database!"
+                                            });
+                                        }
+                                    })
+                                    .catch((err) => {
+                                        respond(err);
+                                    })
+                            } else if (verify.delta === -1) {
+                                return respond({
+                                    succes: false,
+                                    message: "You are to late!"
+                                });
+                            }
+                        }
+                    })
+                    .catch(function (err) {
+                        respond(err);
+                    })
+            }
+        }).catch((err) => {
+            respond(err);
+        })
+}
+
+
+    this.add({role: "auth",cmd: "authenticate",mfa: "app"}, authenticate);
+    this.add({role: "auth",app: "verify"}, verifyAppCode);
+    this.add({role: "auth",create: "uri"}, createUri);
+    this.add({role: "auth",verify: "uri"}, verifyUriAndSaveToAccount);
 
 }

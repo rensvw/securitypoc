@@ -5,6 +5,8 @@ module.exports = function auth(options) {
 
   var act = Promise.promisify(this.act, {context: this})
 
+  
+
   function authenticateAndSendSMSCode(msg, respond) {
     let email = msg.email;
     let password = msg.password;
@@ -54,7 +56,7 @@ module.exports = function auth(options) {
       });
   }
 
-function verifySMSCode(msg, respond) {
+function verifySMSCodeBySignUp(msg, respond) {
     let uuid = msg.uuid;
     let code = msg.code;
     let seneca = this;
@@ -94,7 +96,7 @@ function verifySMSCode(msg, respond) {
       })
   }
 
-  function verifySMSCode2(msg, respond) {
+  function verifySMSCodeMFA(msg, respond) {
     let uuid = msg.uuid;
     let code = msg.code;
     let seneca = this;
@@ -146,7 +148,7 @@ function verifySMSCode(msg, respond) {
   }
 
  this.add({role:"auth",cmd:"authenticate",mfa:"sms"}, authenticateAndSendSMSCode);
-  this.add({role:"auth",cmd:"verify",mfa:"sms"}, verifySMSCode);
-  this.add({role:"auth",sms:"verify"}, verifySMSCode2);
+  this.add({role:"auth",sms:"signup"}, verifySMSCodeBySignUp);
+  this.add({role:"auth",sms:"verify"}, verifySMSCodeMFA);
 
 }

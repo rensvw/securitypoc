@@ -2,7 +2,7 @@ var HOST = process.env.HOST || process.argv[2] || "127.0.0.1"
 var BASES = (process.env.BASES || process.argv[3] || "127.0.0.1:39000,127.0.0.1:39001").split(",")
 var SILENT = process.env.SILENT || process.argv[4] || "true"
 
-var seneca = require("seneca")({tag: "user-app-redis-service"})
+var seneca = require("seneca")({tag: "user-app-mongo-service"})
 
 seneca
   .use("entity")
@@ -17,10 +17,8 @@ seneca
     listen: [
       {
         pins: [
-          "role:userapp,cmd:get,type:totp",
-          "role:userflag,cmd:create",
-          
-          "role:userapp,cmd:create,type:totp"]
+          "entity:user-app,create:user",
+          "entity:user-app,get:key"]
       }],
     host:HOST,
     bases:BASES,

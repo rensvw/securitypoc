@@ -9,8 +9,12 @@ import { AuthRoutingModule } from './auth-routing.module';
 
 import { LoginComponent } from './login/login.component';
 import { ProfileComponent } from './profile/profile.component';
-import { SignupComponent } from './signup/signup.component';
+import { SignupComponent } from './signup/signup/signup.component';
 import { VerifyComponent } from './verify/verify.component';
+import { SignupSmsComponent } from './signup/signup-sms/signup-sms.component';
+import { SignupAppComponent } from './signup/signup-app/signup-app.component';
+import { SignupVerifyComponent } from './signup/signup-verify/signup-verify.component';
+import { QRCodeModule } from 'angular2-qrcode';
 
 export function authHttpServiceFactory(http: Http, options: RequestOptions) {
   return new AuthHttp(new AuthConfig({tokenName: 'token',
@@ -32,9 +36,10 @@ export function authHttpServiceFactory(http: Http, options: RequestOptions) {
         CommonModule,
         FormsModule,
         ReactiveFormsModule,
-        MultiselectDropdownModule],
+        MultiselectDropdownModule,
+        QRCodeModule],
     exports: [],
-    declarations: [LoginComponent, ProfileComponent, SignupComponent, VerifyComponent]
+    declarations: [LoginComponent, ProfileComponent, SignupComponent, VerifyComponent, SignupSmsComponent, SignupAppComponent, SignupVerifyComponent]
 })
 
 export class AuthModule {

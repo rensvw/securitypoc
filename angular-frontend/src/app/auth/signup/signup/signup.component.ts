@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import {FormGroup, FormControl, Validators, FormBuilder, AbstractControl } from '@angular/forms';
-import { IUser } from './../user';
-import { AuthService } from './../auth.service';
+import { IUser } from './../../user';
+import { AuthService } from './../../auth.service';
 import 'rxjs/add/operator/debounceTime';
 
 @Component({
@@ -33,10 +33,11 @@ export class SignupComponent implements OnInit {
        this.toggleSpinner();
        this._authService.createUser(formValues).subscribe(
          userExists => {
-           !userExists.email ? this.showError = true : this._router.navigate(['users']);
+           !userExists.email ? this.showError = true : this._router.navigate(['login']);
          },
          err => console.log(err),
-         () => this.toggleSpinner()
+         () => {this.toggleSpinner(),
+         this._router.navigate(['signup/verify'],{ queryParams: { email: formValues.email, verify: "mail" } })}
        );
      }
    }

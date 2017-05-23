@@ -3,6 +3,7 @@ module.exports = function user( options ) {
 this.add({"entity":"user","get":"uuid"}, getUserByUuid);
 this.add({"entity":"user","get":"email"}, getUser);
 this.add({"entity":"user","create":"new"}, createUserWhileCheckingForExistingUser);
+this.add({"entity":"user","update":"flags"}, updateVerifiedFlags);
 
 const moment = require("moment");
 const uuidV4 = require("uuid/v4");
@@ -10,9 +11,7 @@ const uuidV4 = require("uuid/v4");
 function getUser(msg, respond) {
   var user = this.make$("user");
   var email = msg.email;
-  user.load$({
-    email: email
-  }, function (err, user) {
+  user.load$({ email: email }, function (err, user) {
     if (err) {
       respond(err, null);
     }
@@ -27,6 +26,7 @@ function getUser(msg, respond) {
         succes: true,
         email: user.email,
         password: user.password,
+        verified: user.verified,
         fullName: user.fullName,
       });
     }
@@ -36,9 +36,7 @@ function getUser(msg, respond) {
 function getUserByUuid(msg, respond) {
   let user = this.make$("user");
   let uuid = msg.uuid;
-  user.load$({
-    uuid: uuid
-  }, function (err, user) {
+  user.load$({ uuid: uuid }, function (err, user) {
     if (err) {
       respond(err, null);
     }
@@ -66,6 +64,11 @@ function createUser(msg, respond) {
   user.email = msg.email;
   user.fullName = msg.fullName;
   user.password = msg.password;
+  user.verified = {
+    mail: 0,
+    sms: 0,
+    app: 0
+  };
   user.save$((err, user) => {
     if (err) {
       respond(err, null);
@@ -86,9 +89,12 @@ function createUserWhileCheckingForExistingUser(msg, respond) {
   user.email = msg.email;
   user.fullName = msg.fullName;
   user.password = msg.password;
-  this.act("entity:user,get:email", {
-    email: user.email
-  }, function (err, newUser) {
+  user.verified = {
+    mail: 0,
+    sms: 0,
+    app: 0
+  };
+  this.act("entity:user,get:email", {email: user.email }, function (err, newUser) {
     if (err) {
       respond(err, null);
     } else if (newUser.succes) {
@@ -113,8 +119,40 @@ function createUserWhileCheckingForExistingUser(msg, respond) {
   });
 }
 
-
-
+ function updateVerifiedFlags(msg, respond) {
+    var user = this.make('user');
+        user.load$({email: msg.email}, function (err, result) {
+          if (!result) {
+            respond({
+              succes: false,
+              message: "User could not be found!"
+            });
+          }
+          if (msg.sms == undefined){
+            var sms = result.verified.sms;
+          }
+          if (msg.mail == undefined){
+            var mail = result.verified.mail;
+          }
+          if (msg.app == undefined){
+            var app = result.verified.app;
+          } 
+          result.data$({
+            verified: {
+              sms: sms || msg.sms,
+              mail: mail || msg.mail,
+              app: app || msg.app
+            }
+          });
+          result.save$(function (err, user) {
+            respond(err, {
+              succes: true,
+              message: "Succesfully started the verification session!",
+              uuid: user.uuid,
+            })
+          });
+        })
+  }
 };
 
  
