@@ -18,6 +18,9 @@ seneca
       {
         pins: [
           "entity:user-app,create:user",
+          "entity:user-app,crud:user",
+          "entity:user-app,update:user",
+          
           "entity:user-app,get:key"]
       }],
     host:HOST,

@@ -193,7 +193,7 @@ const loginWithMFA = (request, reply) => {
         });
       }
     } else if (!respond.succes) {
-      return reply(Boom.unauthorized("Username or password is wrong!"));
+      return reply(Boom.unauthorized("Username or password is wrong, or you didn't verify the authentication type!"));
     }
   });
 };
@@ -276,10 +276,10 @@ const signUpSMS = (request, reply) => {
   });
 };
 
-const createUriApp = (requets,reply) => {
-  let email = request.payload.email;
+const createUriApp = (request,reply) => {
+  
    server.seneca.act("role:auth,create:uri", {
-    email: email
+    email: request.query.email
   }, function (err, respond) {
     if (err) {
       return reply(Boom.badRequest(respond(err, null)));
@@ -390,6 +390,41 @@ const signupVerifyEmail = (request, reply) => {
   });
 };
 
+const signupVerifyApp = (request, reply) => {
+  let email = request.payload.email;
+  let code = request.payload.code;
+  let password = request.payload.password;
+  let secret = request.payload.secret;
+  
+  server.seneca.act("role:auth,verify:uri", {
+    email: email,
+    code: code,
+    password: password,
+    secret: secret
+    
+    
+  }, function (err, respond) {
+    if (err) {
+      reply(err);
+    } else if (respond.succes) {
+      if(respond.returnToken){
+        return reply({
+          succes: respond.succes,
+          message: respond.message,
+          email: respond.user.email,
+          redirectTo: "home",          
+        });
+      }
+      else{
+        return reply(respond);
+      }
+    } else if (!respond.succes) {
+     reply({succes:respond.succes,
+      message: respond.message})
+    }
+  });
+};
+
 const signupVerifySMS = (request, reply) => {
   let uuid = request.payload.uuid;
   let code = request.payload.code;
@@ -453,16 +488,17 @@ const signupVerifySMS = (request, reply) => {
         description: "After the authenticater app code is verified, adds this function to the account!",
         notes: "Authenticator app added if true",
         tags: ["api"],
-        auth: {
-            strategy: "jwt"
-        },
+        
         validate: {
           payload: {
-            uuid: Joi.string().required(),
-            code: Joi.string().required() 
+            email: Joi.string().required(),
+            code: Joi.string().required(),
+            password: Joi.string().required(),
+            secret: Joi.string().required()            
+
           }
         },
-        handler: signupVerifyEmail
+        handler: signupVerifyApp
       }
     },{
       method: "POST",
@@ -560,19 +596,16 @@ const signupVerifySMS = (request, reply) => {
       }
     },
     {
-      method: "POST",
+      method: "GET",
       path: "/api/signup/app/create/uri",
       config: {
         description: "Create the uri for an authenticator app",
         notes: "Create the uri for an authenticator app",
         tags: ["api"],
-        validate: {
-          payload: {
+        validate:{
+          query: {
             email: Joi.string().email().required()
           }
-        },
-        auth: {
-            strategy: "jwt"
         },
         handler: createUriApp
       }

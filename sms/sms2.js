@@ -70,7 +70,9 @@ module.exports = function sms(options){
     function createSMSCodeAndSave(msg, respond) {
         act("role:generate,cmd:code")
             .then((generatedCode) => {
+                console.log("MSGGGGGGGGGGGGGGGGGGGGG:",msg.phoneNumber,msg.countryCode)
                 return act("entity:user-sms,crud:user", {
+                
                         email: msg.email,
                         code: generatedCode.code,
                         uuid: msg.uuid,

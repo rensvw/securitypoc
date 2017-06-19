@@ -84,28 +84,28 @@ export class AuthService {
             )
         }   
 
-    createUriApp(email) {
-        return this._http.post(this._createUriApp, email) // ...using post request
+        createUserApp(settings) {
+        
+        return this._http.post(this._verifySignupAppUrl, settings) // ...using post request
             .map((res: Response) => res.json()) 
             .subscribe(
                 data => {
-                    this.uri = data.uri,
-                    this.key = data.key
+                    this.succes = data.succes;
                     console.log(data)
                 },
             error => console.log(error),
         () => { 
-            switch(this.redirectTo){
-                case "home":
-                    this._router.navigate(['home']);    
-                    break;
-                case "verifySMSPage":
-                    this._router.navigate(['signup/verify'],{ queryParams: { uuid: this.uuid, verify: "sms" } });
-                    break;
+            if(this.succes){
+                this._router.navigate(['home']);   
             }
-        }
+             
+                
+            }
+        
             )
         }   
+
+   
         
 
     authenticate(credentials){
@@ -225,12 +225,7 @@ export class AuthService {
             this.succes = data.succes;
             this.redirectTo = data.redirectTo;
             this.uuid = data.uuid;
-            if(data.token){
-                console.log("TOKEN:",data.token);
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('email', data.email);
-                
-            }
+            
         },
             error => console.log(error),
         () => { 
@@ -240,7 +235,7 @@ export class AuthService {
                     message: "The code is incorrect!"
                 }        
             }
-            this._router.navigate(['home']);       
+            this._router.navigate(['login']);       
         }
       );
     }

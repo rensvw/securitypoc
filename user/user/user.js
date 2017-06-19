@@ -2,11 +2,36 @@ module.exports = function user( options ) {
 
 this.add({"entity":"user","get":"uuid"}, getUserByUuid);
 this.add({"entity":"user","get":"email"}, getUser);
+this.add({"entity":"user","get":"verified"}, checkIfUserIsVerified);
+
 this.add({"entity":"user","create":"new"}, createUserWhileCheckingForExistingUser);
 this.add({"entity":"user","update":"flags"}, updateVerifiedFlags);
 
 const moment = require("moment");
 const uuidV4 = require("uuid/v4");
+
+function checkIfUserIsVerified(msg,respond){
+   var user = this.make$("user");
+  var email = msg.email;
+  user.load$({ email: email }, function (err, user) {
+    if (err) {
+      respond(err, null);
+    }
+    if (!user) {
+      respond({
+        succes: false,
+        message: "User could not be found!"
+      });
+    }
+    if (user) {
+      respond(err, {
+        succes: true,
+        email: user.email,
+        verified: user.verified
+      });
+    }
+  });
+}
 
 function getUser(msg, respond) {
   var user = this.make$("user");

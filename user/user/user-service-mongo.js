@@ -20,6 +20,7 @@ seneca
       "entity:user,create:new",
       "entity:user,get:uuid",
       "entity:user,get:email",
+      "entity:user,get:verified",
       "entity:user","update:flags"]
     }],
     host:HOST,

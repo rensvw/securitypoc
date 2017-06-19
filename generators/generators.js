@@ -20,7 +20,7 @@ function generateTOTPKey(msg,respond){
 }
 
 function generateTOTPUri(msg,respond){
-    let email = msg.email || "test";
+    let email = msg.email;
     let name = msg.name || "QNHSecurityPoC";
     let timeFrame = msg.time || 30;
     let digits = msg.digits || 6;

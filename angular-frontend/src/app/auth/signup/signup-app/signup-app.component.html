@@ -3,17 +3,36 @@
     <div class="card">
   <h3 class="card-header">{{pageTitle}}</h3>
   <div class="card-block">
-   
     
-    <form [formGroup]="userForm" (ngSubmit)="createUser(userForm.value)">
-
-       <div class="form-group" >
-          <qr-code [value]="'otpauth://totp/QNHSecurityPoC:rensvanw@gmail.com?secret=4IZPDK667ZB3QPZXBF4MY5GBCPMLLT64&issuer=QNHSecurityPoC&algorithm=SHA1&digits=6&period=30'" [size]="150"></qr-code>
-      </div>
+    <div style="text-align:center"*ngIf="showQR" class="form-group" >
+      <qr-code [value]="uri" [size]="250"></qr-code>
+      <h5>Please scan the QR code with your phone!</h5>
+      <br>
+      <h6>After you've scanned the QR code, enter the code displayed in your app in the field below!</h6>
           
-  
-    <!--  <button type="button" class="btn btn-primary" (click)="goBack()">Back</button>
-      <button type="submit" [disabled]="userForm.invalid" class="btn btn-primary pull-right"><i *ngIf='showSpinner'class="fa fa-spinner fa-spin"></i> Next</button>-->
+      <br>  
+            
+      </div>
+    
+
+     <form [formGroup]="userForm" (ngSubmit)="createUserApp(userForm.value)">
+
+       <div class="form-group">
+        <label>Code:</label>
+        <input class="form-control" type="text" placeholder="code" [formControl]="userForm.controls['code']" >
+
+      </div>
+
+
+
+      <div class="form-group">
+        <label>Password:</label>
+        <input class="form-control" type="password" placeholder="Password" [formControl]="userForm.controls['password']">
+      </div>
+
+       
+
+      <button type="submit" [disabled]="userForm.invalid" class="btn btn-primary pull-right"><i *ngIf='showSpinner'class="fa fa-spinner fa-spin"></i> Save</button>
       </form>
       
       

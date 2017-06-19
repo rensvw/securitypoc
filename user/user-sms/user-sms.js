@@ -92,8 +92,16 @@ module.exports = function flag( options ) {
               message: "User could not be found!"
             });
           }
+          if(msg.phoneNumber== undefined){
+            msg.phoneNumber = result.phoneNumber;
+          }
+          if(msg.countryCode == undefined){
+            msg.countryCode = result.countryCode;
+          }
           result.data$({
             uuid: msg.uuid,
+            phoneNumber: msg.phoneNumber,
+            countryCode: msg.countryCode,
             session: {
               timeCreated: moment().format('LLL'),
               code: msg.code,
@@ -117,9 +125,10 @@ module.exports = function flag( options ) {
         email: msg.email
       })
       .then((user) => {
-        console.log('uuiid you know matye: 2',uuid)
         if (user.succes) {
           return act("entity:user-sms,update:new", {
+              phoneNumber: msg.phoneNumber,
+              countryCode: msg.countryCode,
               email: msg.email,
               code: msg.code,
               uuid: uuid
@@ -131,11 +140,10 @@ module.exports = function flag( options ) {
               return respond(err, null)
             })
         } else if (!user.succes) {
-          console.log('uuiid you know matye: 3',uuid)
           return act("entity:user-sms,create:new", {
               email: msg.email,
               uuid: uuid,
-              code: msg.code || 0,
+              code: msg.code,
               phoneNumber: msg.phoneNumber,
               countryCode: msg.countryCode,
             })

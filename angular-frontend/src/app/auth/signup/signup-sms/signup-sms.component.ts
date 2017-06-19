@@ -16,6 +16,7 @@ export class SignupSmsComponent implements OnInit {
   pageTitle: string = 'Add or change your phone number';
   showError: boolean = false;
   showSpinner: boolean = false;
+  
 
   constructor(private _router: Router, private _authService: AuthService, private _formBuilder: FormBuilder) { }
 

@@ -159,32 +159,63 @@ module.exports = function authenticatorAppAuth(option) {
     function verifyUriAndSaveToAccount(msg, respond) {
         let code = msg.code.toString();
         let secret = msg.secret.toString();
-        let verify = authenticator.verifyToken(secret, code);
-        if (verify === null) {
-            return respond({
-                succes: false,
-                message: "Code is incorrect!"
-            });
-        } else if (verify.delta === 0) {
-            act("entity:user-app,create:user", {
-                    email: msg.email,
-                    key: secret
-                })
-                .then((result) => {
-                    return respond({
-                        message: "We saved the authenticator to your account!",
-                        succes: true,
-                    })
-                })
-                .catch((err) => {
-                    respond(err);
-                })
-        } else if (verify.delta === -1) {
-            return respond({
-                succes: false,
-                message: "You are to late!"
-            });
-        }
+        let password = msg.password;
+        let email = msg.email;
+        return act("entity:user,get:email", {
+                email: email
+            })
+            .then((user) => {
+                if (user.succes) {
+                    act("role:hash,cmd:comparePasswords", {
+                            password: password,
+                            hash: user.password
+                        })
+                        .then((authenticated) => {
+                            if (authenticated.succes) {
+                                let verify = authenticator.verifyToken(secret, code);
+                                if (verify === null) {
+                                    return respond({
+                                        succes: false,
+                                        message: "Code is incorrect!"
+                                    });
+                                } else if (verify.delta === 0) {
+                                    act("entity:user-app,crud:user", {
+                                            email: msg.email,
+                                            key: secret
+                                        })
+                                        .then((result) => {
+                                             return act("entity:user,update:flags", {email: result.email,app: 1})
+                                                .then((response)=>{
+                                                    return respond({
+                                                    succes: true,
+                                                    returnToken: true,
+                                                    user: {
+                                                        email: response.email,
+                                                    },
+                                                    message: "All codes are correct, welcome!"
+                                                    });
+                                                })
+                                        .catch((err) => {
+                                            respond(err);
+                                        })})}
+                                 else if (verify.delta === -1) {
+                                    return respond({
+                                        succes: false,
+                                        message: "You are to late!"
+                                    });
+                                }
+
+                            } else {
+
+                            }
+                        })
+                        .catch((err) => {
+                            return respond(err);
+                        })
+                }
+            }).catch((err) => {
+                return respond(err);
+            })
     }
 
     function verifyAppCode(msg, respond) {
