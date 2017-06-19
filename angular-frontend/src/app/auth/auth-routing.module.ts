@@ -14,9 +14,8 @@ import { VerifyComponent } from './verify/verify.component';
   imports: [RouterModule.forChild([
       { path: 'signup',  component: SignupComponent },
       { path: 'signup/verify',  component: SignupVerifyComponent },
-      { path: 'signup/sms',  component: SignupSmsComponent },
-      { path: 'signup/app',  component: SignupAppComponent },
-      { path: 'profile', canActivate: [AuthGuard], component: ProfileComponent },
+      { path: 'settings/phonenumber',  canActivate: [AuthGuard],component: SignupSmsComponent },
+      { path: 'settings/authenticator',  canActivate: [AuthGuard],component: SignupAppComponent },
       { path: 'login', component: LoginComponent },
       { path: 'verify', component: VerifyComponent },
     ])],

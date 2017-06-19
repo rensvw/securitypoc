@@ -21,7 +21,7 @@ export class SignupVerifyComponent implements OnInit {
 
     uuid;
     verifyType;
-    codeCredentials;
+    signupCredentials;
     verifyForm;
 
   ngOnInit() {
@@ -45,12 +45,13 @@ export class SignupVerifyComponent implements OnInit {
     }
 
    verify(formValues){
-    this.codeCredentials = {
+    this.signupCredentials = {
       uuid: this.uuid,
       code: formValues.code,
       verifyType: this.verifyType
     }
-       this._authService.verify(this.codeCredentials);  
+    console.log(this.signupCredentials);
+       this._authService.verifySignup(this.signupCredentials);  
        this.verifyForm.reset()
       };
 

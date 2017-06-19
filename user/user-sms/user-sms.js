@@ -112,15 +112,17 @@ module.exports = function flag( options ) {
   
 
   function updateOrCreateNewSession(msg, respond) {
+    let uuid = msg.uuid
     act("entity:user-sms,get:user", {
         email: msg.email
       })
       .then((user) => {
+        console.log('uuiid you know matye: 2',uuid)
         if (user.succes) {
           return act("entity:user-sms,update:new", {
               email: msg.email,
               code: msg.code,
-              uuid: msg.uuid
+              uuid: uuid
             })
             .then((data) => {
               return respond(null, data);
@@ -129,9 +131,10 @@ module.exports = function flag( options ) {
               return respond(err, null)
             })
         } else if (!user.succes) {
+          console.log('uuiid you know matye: 3',uuid)
           return act("entity:user-sms,create:new", {
               email: msg.email,
-              uuid: msg.uuid,
+              uuid: uuid,
               code: msg.code || 0,
               phoneNumber: msg.phoneNumber,
               countryCode: msg.countryCode,

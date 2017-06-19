@@ -10,11 +10,12 @@ export class HomeComponent implements OnInit {
 
   pageTitle: string = 'Welcome';
   fullName: string;
+  email;
 
   constructor(private _authService: AuthService) { }
 
   ngOnInit() {
-
+    this.email = localStorage.getItem('email');
 
   }
 

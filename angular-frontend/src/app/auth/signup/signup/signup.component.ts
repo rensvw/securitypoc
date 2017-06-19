@@ -19,7 +19,7 @@ export class SignupComponent implements OnInit {
 
 
   constructor(private _router: Router, private _authService: AuthService, private _formBuilder: FormBuilder) { }
-
+ 
   ngOnInit() {
     this.userForm = this._formBuilder.group({
       password: ['', Validators.compose([Validators.required, Validators.minLength(5)])],
@@ -31,14 +31,7 @@ export class SignupComponent implements OnInit {
    createUser(formValues) {
      if (this.userForm.valid) {
        this.toggleSpinner();
-       this._authService.createUser(formValues).subscribe(
-         userExists => {
-           !userExists.email ? this.showError = true : this._router.navigate(['login']);
-         },
-         err => console.log(err),
-         () => {this.toggleSpinner(),
-         this._router.navigate(['signup/verify'],{ queryParams: { email: formValues.email, verify: "mail" } })}
-       );
+       this._authService.createUserEmail(formValues);
      }
    }
 

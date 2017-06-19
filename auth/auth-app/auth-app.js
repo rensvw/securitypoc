@@ -88,59 +88,72 @@ module.exports = function authenticatorAppAuth(option) {
                 if (!user) {
                     respond(user);
                 } else if (user) {
-                    act("entity:user-app,get:key", {email: user.email})
+                    act("entity:user-app,get:key", {
+                            email: user.email
+                        })
                         .then((data) => {
-                                if (!data.succes) {
+                            if (!data.succes) {
+                                return respond({
+                                    succes: false,
+                                    message: "Please first connect the authenticator app to your account!"
+                                })
+                            } else {
+                                let verify = authenticator.verifyToken(data.key.toString(), code.toString());
+                                if (verify === null) {
                                     return respond({
                                         succes: false,
-                                        message: "Please first connect the authenticator app to your account!"
-                                    })
-                                } else {
-                                    let verify = authenticator.verifyToken(data.key.toString(), code.toString());
-                                    if (verify === null) {
-                                        return respond({
-                                            succes: false,
-                                            message: "Code is incorrect!"
-                                        });
-                                    } else if (verify.delta === 0) {
-                                        return respond({
-                                            succes: true,
-                                            user: {
-                                                email: this.user.email,
-                                                fullName: this.user.fullName
-                                            },
-                                            message: "Code is correct, welcome!"
-                                        });
-                                    } else if (verify.delta === -1) {
-                                        return respond({
-                                            succes: false,
-                                            message: "You are to late!"
-                                        });
-                                    }
+                                        message: "Code is incorrect!"
+                                    });
+                                } else if (verify.delta === 0) {
+                                    return respond({
+                                        succes: true,
+                                        user: {
+                                            email: this.user.email,
+                                            fullName: this.user.fullName
+                                        },
+                                        message: "Code is correct, welcome!"
+                                    });
+                                } else if (verify.delta === -1) {
+                                    return respond({
+                                        succes: false,
+                                        message: "You are to late!"
+                                    });
                                 }
-                            })
-                            .catch(function (err) {
-                                respond(err);
-                            })
-                        }
-
-                        }).catch((err) => {
+                            }
+                        })
+                        .catch(function (err) {
                             respond(err);
                         })
+                }
 
-                        }
+            }).catch((err) => {
+                respond(err);
+            })
+
+    }
 
 
-    function createUri(msg,respond){
+    function createUri(msg, respond) {
         act("role:generate,cmd:totp-key")
-        .then((data)=>{
-            return act("role:generate,cmd:totp-uri",{email: msg.email,key: data.key})
-                .then((result)=>{respond({uri: result.uri,secret: data.key,email: msg.email});})
-                .catch((err)=>{respond(err);});
-        })
-        .catch((err)=>{
-            respond(err);
-        });
+            .then((data) => {
+                return act("role:generate,cmd:totp-uri", {
+                        email: msg.email,
+                        key: data.key
+                    })
+                    .then((result) => {
+                        respond({
+                            uri: result.uri,
+                            key: data.key,
+                            email: msg.email
+                        });
+                    })
+                    .catch((err) => {
+                        respond(err);
+                    });
+            })
+            .catch((err) => {
+                respond(err);
+            });
     }
 
     function verifyUriAndSaveToAccount(msg, respond) {
@@ -153,19 +166,19 @@ module.exports = function authenticatorAppAuth(option) {
                 message: "Code is incorrect!"
             });
         } else if (verify.delta === 0) {
-            act("entity:user-app,create:user",{
-                email: msg.email,
-                key: secret
-            })
-            .then((result)=>{
-                return respond({
-                    message: "We saved the authenticator to your account!",
-                    succes: true,
+            act("entity:user-app,create:user", {
+                    email: msg.email,
+                    key: secret
                 })
-            })
-            .catch((err)=>{
-                respond(err);
-            })
+                .then((result) => {
+                    return respond({
+                        message: "We saved the authenticator to your account!",
+                        succes: true,
+                    })
+                })
+                .catch((err) => {
+                    respond(err);
+                })
         } else if (verify.delta === -1) {
             return respond({
                 succes: false,
@@ -174,75 +187,75 @@ module.exports = function authenticatorAppAuth(option) {
         }
     }
 
-function verifyAppCode(msg, respond) {
-    let uuid = msg.uuid;
-    let code = msg.code;
-    let seneca = this;
-    act("entity:user-mfa,get:uuid", {
-            uuid: uuid
-        })
-        .then((user) => {
-            if (!user) {
-                return respond(null, user);
-            } else if (user) {
-                act("entity:user-app,get:key", {
-                        email: user.email
-                    })
-                    .then((data) => {
-                        if (!data.succes) {
-                            return respond({
-                                succes: false,
-                                message: "Please first connect the authenticator app to your account!"
-                            })
-                        } else {
-                            let verify = authenticator.verifyToken(data.key.toString(), code.toString());
-                            if (verify === null) {
+    function verifyAppCode(msg, respond) {
+        let uuid = msg.uuid;
+        let code = msg.code;
+        let seneca = this;
+        act("entity:user-mfa,get:uuid", {
+                uuid: uuid
+            })
+            .then((user) => {
+                if (!user) {
+                    return respond(null, user);
+                } else if (user) {
+                    act("entity:user-app,get:key", {
+                            email: user.email
+                        })
+                        .then((data) => {
+                            if (!data.succes) {
                                 return respond({
                                     succes: false,
-                                    message: "Code is incorrect!"
-                                });
-                            } else if (verify.delta === 0) {
-                                return act("entity:user-mfa,change:flags", {
-                                        uuid: msg.uuid,
-                                        app: 1
-                                    })
-                                    .then((data) => {
-                                        if (data.succes) {
-                                            act('role:auth,mfa:check', {
-                                                    uuid: msg.uuid
-                                                })
-                                                .then((check) => {
-                                                    return respond(check);
-                                                })
-                                                .catch((err) => {
-                                                    return respond(err);
+                                    message: "Please first connect the authenticator app to your account!"
+                                })
+                            } else {
+                                let verify = authenticator.verifyToken(data.key.toString(), code.toString());
+                                if (verify === null) {
+                                    return respond({
+                                        succes: false,
+                                        message: "Code is incorrect!"
+                                    });
+                                } else if (verify.delta === 0) {
+                                    return act("entity:user-mfa,change:flags", {
+                                            uuid: msg.uuid,
+                                            app: 1
+                                        })
+                                        .then((data) => {
+                                            if (data.succes) {
+                                                act('role:auth,mfa:check', {
+                                                        uuid: msg.uuid
+                                                    })
+                                                    .then((check) => {
+                                                        return respond(check);
+                                                    })
+                                                    .catch((err) => {
+                                                        return respond(err);
+                                                    });
+                                            } else {
+                                                return respond({
+                                                    succes: false,
+                                                    message: "Something wen't wrong in the database!"
                                                 });
-                                        } else {
-                                            return respond({
-                                                succes: false,
-                                                message: "Something wen't wrong in the database!"
-                                            });
-                                        }
-                                    })
-                                    .catch((err) => {
-                                        respond(err);
-                                    })
-                            } else if (verify.delta === -1) {
-                                return respond({
-                                    succes: false,
-                                    message: "You are to late!"
-                                });
+                                            }
+                                        })
+                                        .catch((err) => {
+                                            respond(err);
+                                        })
+                                } else if (verify.delta === -1) {
+                                    return respond({
+                                        succes: false,
+                                        message: "You are to late!"
+                                    });
+                                }
                             }
-                        }
-                    })
-                    .catch(function (err) {
-                        respond(err);
-                    })
-            }
-        }).catch((err) => {
-            respond(err);
-        })
-}
+                        })
+                        .catch(function (err) {
+                            respond(err);
+                        })
+                }
+            }).catch((err) => {
+                respond(err);
+            })
+    }
 
 
     this.add({role: "auth",cmd: "authenticate",mfa: "app"}, authenticate);

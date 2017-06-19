@@ -55,28 +55,104 @@ module.exports = function auth(options) {
         return respond(err);
       });
   }
+function signupAndSendSMS(msg, respond) {
+  let phoneNumber = msg.phoneNumber;
+  let countryCode = msg.countryCode;
+  let email = msg.email;
+  let password = msg.password;
+  act("entity:user,get:email", {
+      email: email
+    })
+    .then((user) => {
+      if (user.succes) {
+        act("role:hash,cmd:comparePasswords", {
+            password: password,
+            hash: user.password
+          })
+          .then((authenticated) => {
+            if (authenticated.succes) {
+              return act("entity:user-mfa,crud:user", {
+                  email: msg.email,
+                  mail: 1,
+                  sms: 0,
+                  app: 1
+                })
+                    .then((user) => {
+                      if (user.succes) {
+                        return act("role:sms,cmd:save,send:false", {
+                            email: email,
+                            uuid: user.uuid
+                          })
+                          .then((result) => {
+                            return respond(result);
+                          })
+                          .catch((err) => {
+                            return respond(err);
+                          })
+                      } else {
+                        return respond(user);
+                      }
+                    })
+                    .catch((err) => {
+                      respond(err);
+                    })
+               
+            }
+            else{
+              return respond({
+                succes: 'false',
+                message: "Password is not correct!"
+              })
+            }
+          })
+          .catch((err) => {
+            respond(err);
+          })
+      }
+    }).catch((err) => {
+      respond(err);
+    })
+}
 
 function verifySMSCodeBySignUp(msg, respond) {
     let uuid = msg.uuid;
     let code = msg.code;
     let seneca = this;
-    act("role:user,cmd:get,param:uuid", {uuid: uuid})
+     act("entity:user-sms,get:uuid", {uuid: uuid})
       .then((user) => {
         if (!user) {
           respond(user);
         } else if (user) {
-          let smsCodes = user.smsCodes;
-          let newTime = moment(smsCodes[smsCodes.length - 1].timeCreated).add(4, "m");
+          let newTime = moment(user.session.timeCreated).add(4, "m");
           if (newTime > moment()) {
-            if (code == smsCodes[smsCodes.length - 1].code) {
-              respond({
-                succes: true,
-                user: {
-                  email: user.email,
-                  fullName: user.fullName
-                },
-                message: "Code is correct, welcome!"
-              });
+            if (code == user.session.code) {
+              return act("entity:user-mfa,change:flags", {uuid: msg.uuid,sms: 1})
+                .then((data) => {
+                  if (data.succes) {
+                   return act("entity:user,update:flags", {email: data.email,sms: 1})
+                      .then((response)=>{
+                        return respond({
+                          succes: true,
+                          returnToken: true,
+                          user: {
+                            email: response.email,
+                          },
+                          message: "All codes are correct, welcome!"
+                        });
+                      })
+                      .catch((err)=>{
+                        return respond(err);
+                      })
+                  } else {
+                    return respond({
+                      succes: false,
+                      message: "Something wen't wrong in the database!"
+                    });
+                  }
+                })
+                .catch((err) => {
+                  respond(err);
+                })
             } else {
               respond({
                 succes: false,
@@ -148,7 +224,8 @@ function verifySMSCodeBySignUp(msg, respond) {
   }
 
  this.add({role:"auth",cmd:"authenticate",mfa:"sms"}, authenticateAndSendSMSCode);
-  this.add({role:"auth",sms:"signup"}, verifySMSCodeBySignUp);
+  this.add({role:"auth",signup:"sms"}, signupAndSendSMS);
+  this.add({role:"auth",sms:"verify-signup"}, verifySMSCodeBySignUp);  
   this.add({role:"auth",sms:"verify"}, verifySMSCodeMFA);
 
 }

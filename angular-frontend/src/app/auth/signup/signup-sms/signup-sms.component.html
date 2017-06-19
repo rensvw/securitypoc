@@ -3,18 +3,28 @@
   <div class="card-block">
    
     
-    <form [formGroup]="userForm" (ngSubmit)="createUser(userForm.value)">
+    <form [formGroup]="userForm" (ngSubmit)="createUserSMS(userForm.value)">
 
-       <div class="form-group" >
-        <label>Country Code:</label>
-        <input class="form-control" type="text" placeholder="Country Code" [formControl]="userForm.controls['countryCode']" >
+       <div class="form-group">
+         <div *ngIf='showError' class="alert alert-danger" role="alert">
+  <strong>Oh snap!</strong> Phone Number Already Exists!
+        </div>
+        <label>Phone number:</label>
+        <input class="form-control" type="text" placeholder="Phone number" [formControl]="userForm.controls['phoneNumber']" >
+
       </div>
-          
-      <div class="form-group" >
-        <label>Phone Number:</label>
-        <input class="form-control" type="text" placeholder="Phone Number" [formControl]="userForm.controls['mobilePhoneNumber']" >
+       
+      <div class="form-group">
+        <label>Country code:</label>
+        <input class="form-control" type="text" placeholder="Country code" [formControl]="userForm.controls['countryCode']">
       </div>
 
+      <div class="form-group">
+        <label>Password:</label>
+        <input class="form-control" type="password" placeholder="Password" [formControl]="userForm.controls['password']">
+      </div>
+
+       
       <button type="button" class="btn btn-primary" (click)="goBack()">Back</button>
       <button type="submit" [disabled]="userForm.invalid" class="btn btn-primary pull-right"><i *ngIf='showSpinner'class="fa fa-spinner fa-spin"></i> Next</button>
       </form>

@@ -19,7 +19,8 @@ seneca
       pins: [
       "entity:user,create:new",
       "entity:user,get:uuid",
-      "entity:user,get:email",]
+      "entity:user,get:email",
+      "entity:user","update:flags"]
     }],
     host:HOST,
     bases:BASES,

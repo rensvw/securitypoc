@@ -21,9 +21,8 @@
 
        <div class="form-group" >
         <label>Password:</label>
-        <input class="form-control" type="text" placeholder="Password" [formControl]="userForm.controls['password']" >
+        <input class="form-control" type="password" placeholder="Password" [formControl]="userForm.controls['password']" >
       </div>
-          
       <button type="button" class="btn btn-primary" (click)="goBack()">Back</button>
       <button type="submit" [disabled]="userForm.invalid" class="btn btn-primary pull-right"><i *ngIf='showSpinner'class="fa fa-spinner fa-spin"></i> Next</button>
       </form>

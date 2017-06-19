@@ -97,6 +97,15 @@ server.route({
   }
 })
 
+server.route({
+  method: "POST", path: "/api/signup/verify/email",
+  handler: {
+    wo: {
+      passThrough: true
+    }
+  }
+})
+
 
 server.start(function(){
   console.log("front",server.info.uri)

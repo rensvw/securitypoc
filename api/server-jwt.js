@@ -104,10 +104,11 @@ server.register([
       
       
         {path: "/api/logout", method: "get"},
-        {path: "/api/signup", method: "post"},
-        {path: "/api/verify-email", method: "post"},
-        {path: "/api/verify-sms", method: "post"},
-        {path: "/api/verify-app", method: "post"},
+        {path: "/api/signup/email", method: "post"},
+        {path: "/api/verify/email", method: "post"},
+        {path: "/api/verify/sms", method: "post"},
+        {path: "/api/verify/app", method: "post"},
+        {path: "/api/signup/verify/email", method: "post"},
         
         
     ],
@@ -179,6 +180,7 @@ const loginWithMFA = (request, reply) => {
           succes: respond.succes,
           message: respond.message,
           redirectTo: 'home',
+          email: respond.user.email,
           token: createToken(respond.user)
         });
       }
@@ -217,6 +219,7 @@ const verifySMSCodeAndLogin = (request, reply) => {
           succes: respond.succes,
           message: respond.message,
           redirectTo: "home",          
+          email: respond.user.email,
           token: createToken(respond.user)
         });
       }
@@ -237,7 +240,7 @@ const logout = (request, reply) => {
 }
 
 // Function for registering!
-const signUp = (request, reply) => {
+const signUpEmail = (request, reply) => {
   let email = request.payload.email;
   let fullName = request.payload.fullName;
   let password = request.payload.password;
@@ -256,12 +259,14 @@ const signUp = (request, reply) => {
 
 const signUpSMS = (request, reply) => {
   let email = request.payload.email;
-  let fullName = request.payload.fullName;
+  let phoneNumber = request.payload.phoneNumber;
+  let countryCode = request.payload.countryCode;
   let password = request.payload.password;
-  server.seneca.act("role:auth,cmd:signup", {
+  server.seneca.act("role:auth,signup:sms", {
+    countryCode: countryCode,
+    phoneNumber: phoneNumber,
     email: email,
-    fullName: fullName,
-    password: password,
+    password: password
   }, function (err, respond) {
     if (err) {
       return reply(Boom.badRequest(respond(err, null)));
@@ -271,6 +276,19 @@ const signUpSMS = (request, reply) => {
   });
 };
 
+const createUriApp = (requets,reply) => {
+  let email = request.payload.email;
+   server.seneca.act("role:auth,create:uri", {
+    email: email
+  }, function (err, respond) {
+    if (err) {
+      return reply(Boom.badRequest(respond(err, null)));
+    } else {
+      return reply(respond);
+    }
+  });
+
+}
 
 const verifyEmailCodeAndLogin = (request, reply) => {
   if (request.auth.isAuthenticated) {
@@ -293,7 +311,9 @@ const verifyEmailCodeAndLogin = (request, reply) => {
           succes: respond.succes,
           message: respond.message,
           redirectTo: "home",
+          email: respond.user.email,
           token: createToken(respond.user)
+
         });
       }
       else{
@@ -326,8 +346,66 @@ const verifyTOTPCodeAndLogin = (request, reply) => {
         return reply({
           succes: respond.succes,
           message: respond.message,
+          redirectTo: "home",         
+          email: respond.user.email, 
+          token: createToken(respond.user)
+        });
+      }
+      else{
+        return reply(respond);
+      }
+    } else if (!respond.succes) {
+     reply({succes:respond.succes,
+      message: respond.message})
+    }
+  });
+};
+
+const signupVerifyEmail = (request, reply) => {
+  let uuid = request.payload.uuid;
+  let code = request.payload.code;
+  server.seneca.act("role:auth,signup:verify-email", {
+    uuid: uuid,
+    code: code
+  }, function (err, respond) {
+    if (err) {
+      reply(err);
+    } else if (respond.succes) {
+      if(respond.returnToken){
+        return reply({
+          succes: respond.succes,
+          message: respond.message,
+          email: respond.user.email,
           redirectTo: "home",          
           token: createToken(respond.user)
+        });
+      }
+      else{
+        return reply(respond);
+      }
+    } else if (!respond.succes) {
+     reply({succes:respond.succes,
+      message: respond.message})
+    }
+  });
+};
+
+const signupVerifySMS = (request, reply) => {
+  let uuid = request.payload.uuid;
+  let code = request.payload.code;
+  server.seneca.act("role:auth,sms:verify-signup", {
+    uuid: uuid,
+    code: code
+  }, function (err, respond) {
+    if (err) {
+      reply(err);
+    } else if (respond.succes) {
+      if(respond.returnToken){
+        return reply({
+          succes: respond.succes,
+          message: respond.message,
+          email: respond.user.email,
+          redirectTo: "home",
         });
       }
       else{
@@ -353,6 +431,57 @@ const verifyTOTPCodeAndLogin = (request, reply) => {
         },
         handler: testAuth
       }
+    },{
+      method: "POST",
+      path: "/api/signup/verify/email",
+      config: {
+        description: "After the email is verified, creates the user!",
+        notes: "User created!",
+        tags: ["api"],
+        validate: {
+          payload: {
+            uuid: Joi.string().required(),
+            code: Joi.string().required() 
+          }
+        },
+        handler: signupVerifyEmail
+      }
+    },{
+      method: "POST",
+      path: "/api/signup/verify/app",
+      config: {
+        description: "After the authenticater app code is verified, adds this function to the account!",
+        notes: "Authenticator app added if true",
+        tags: ["api"],
+        auth: {
+            strategy: "jwt"
+        },
+        validate: {
+          payload: {
+            uuid: Joi.string().required(),
+            code: Joi.string().required() 
+          }
+        },
+        handler: signupVerifyEmail
+      }
+    },{
+      method: "POST",
+      path: "/api/signup/verify/sms",
+      config: {
+        description: "After the sms is verified, creates the user!",
+        notes: "SMS User created!",
+        tags: ["api"],
+        auth: {
+            strategy: "jwt"
+        },
+        validate: {
+          payload: {
+            uuid: Joi.string().required(),
+            code: Joi.string().required() 
+          }
+        },
+        handler: signupVerifySMS
+      }
     }, {
       method: "POST",
       path: "/api/login",
@@ -373,7 +502,7 @@ const verifyTOTPCodeAndLogin = (request, reply) => {
       }
     }, {
       method: "POST",
-      path: "/api/verify-sms",
+      path: "/api/verify/sms",
       config: {
         description: "Verify your sms code when logging in",
         notes: "Returns a cookie session if authorised",
@@ -390,7 +519,7 @@ const verifyTOTPCodeAndLogin = (request, reply) => {
     }, 
    {
       method: "POST",
-      path: "/api/verify-email",
+      path: "/api/verify/email",
       config: {
         description: "Verify your email code when logging in",
         notes: "Returns a cookie session if authorised",
@@ -406,7 +535,7 @@ const verifyTOTPCodeAndLogin = (request, reply) => {
       }
     }, {
       method: "POST",
-      path: "/api/verify-app",
+      path: "/api/verify/app",
       config: {
         description: "Verify your TOTP code when logging in",
         notes: "Returns a cookie session if authorised",
@@ -418,7 +547,6 @@ const verifyTOTPCodeAndLogin = (request, reply) => {
           }
         },
         handler: verifyTOTPCodeAndLogin,
-
       }
     },
     {
@@ -433,7 +561,25 @@ const verifyTOTPCodeAndLogin = (request, reply) => {
     },
     {
       method: "POST",
-      path: "/api/signup",
+      path: "/api/signup/app/create/uri",
+      config: {
+        description: "Create the uri for an authenticator app",
+        notes: "Create the uri for an authenticator app",
+        tags: ["api"],
+        validate: {
+          payload: {
+            email: Joi.string().email().required()
+          }
+        },
+        auth: {
+            strategy: "jwt"
+        },
+        handler: createUriApp
+      }
+    },
+    {
+      method: "POST",
+      path: "/api/signup/email",
       config: {
         description: "Registers a new user",
         notes: "Returns true if user is created and saved to database",
@@ -445,8 +591,25 @@ const verifyTOTPCodeAndLogin = (request, reply) => {
             fullName: Joi.string().min(2).max(200).required()
           }
         },
-        handler: signUp,
-        
+        handler: signUpEmail,
+      }
+    },
+    {
+      method: "POST",
+      path: "/api/signup/sms",
+      config: {
+        description: "Registers a new phonenumber to the user",
+        notes: "Returns true if the phonenumber is created and saved to database",
+        tags: ["api"],
+        validate: {
+          payload: {
+            countryCode: Joi.string().required(),
+            phoneNumber: Joi.string().min(2).max(200).required(),
+            email: Joi.string().email().required(),
+            password: Joi.string().required()
+          }
+        },
+        handler: signUpSMS,
       }
     }
   ]);

@@ -68,26 +68,25 @@ module.exports = function flag( options ) {
     var userMfa = this.make('userMFASession');
     act("role:generate,cmd:uuid")
       .then((data) => {
-        data = this;
+        userMfa.uuid = data.uuid;
+        userMfa.email = msg.email;
+        userMfa.sessionStarted = moment().format("LLL");
+        userMfa.flags = {
+          sms: msg.sms,
+          mail: msg.mail,
+          app: msg.app
+        };
+        userMfa.save$(function (err, userMfa) {
+          if (err) {
+            respond(err, null);
+          } else {
+            respond(null, this.util.clean(userMfa), userMfa);
+          }
+        });
       })
       .catch((err) => {
         respond(err, null);
       });
-    userMfa.uuid = this.uuid;
-    userMfa.email = msg.email;
-    userMfa.sessionStarted = moment().format("LLL");
-    userMfa.flags = {
-      sms: msg.sms,
-      mail: msg.mail,
-      app: msg.app
-    };
-    userMfa.save$(function (err, userMfa) {
-      if (err) {
-        respond(err, null);
-      } else {
-        respond(null, this.util.clean(userMfa), userMfa);
-      }
-    });
   }
 
   function updateNewMfaSession(msg, respond) {
@@ -161,6 +160,7 @@ module.exports = function flag( options ) {
             respond(err, {
               succes: true,
               message: "Succesfully changed the flags!",
+              email: user.email,
               uuid: user.uuid,
             })
           });
@@ -203,5 +203,5 @@ module.exports = function flag( options ) {
       .catch((err) => {
         respond(err, null);
       });
-  }
+    }
    }

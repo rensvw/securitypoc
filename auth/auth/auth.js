@@ -27,33 +27,6 @@ module.exports = function auth(options) {
       
   }
 
-  function signupAndSendMail(msg, respond) {
-    let email = msg.email;
-    let fullName = msg.fullName;
-    let password = msg.password;
-    act("role:hash,cmd:newHash", { password: password })
-    .then((hash) => {
-      return act("entity:user,create:new", {email: email,fullName: fullName,password: hash.password,});
-    })
-    .then((user) => {
-      if(user.succes){
-        return act("entity:user-mfa,crud:user",{email: msg.email,mail: 0,sms: 1,app: 1})
-          .then((userSession)=>{
-            return act("role:email,cmd:mfa",{uuid: userSession.uuid})
-          })
-          .then((response)=>{
-            return respond(response);
-          })
-      } else{
-        return respond(user);
-      }
-    })
-    .catch((err) => {
-      respond(err);
-    })
-      
-  }
-
   function authenticate(msg, respond) {
     let email = msg.email;
     let password = msg.password;
@@ -128,10 +101,7 @@ module.exports = function auth(options) {
   }
 
 
-  this.add({role:"auth",cmd:"signup"}, signup);
   this.add({role:"auth",check:"verified"}, checkVerifiedAuthMethods);
-  
-  this.add({role:"auth",signup:"email"}, signupAndSendMail);     
   this.add({role:"auth",cmd:"authenticate",mfa:"none"}, authenticate);
 
   };
