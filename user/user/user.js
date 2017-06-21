@@ -6,12 +6,14 @@ this.add({"entity":"user","get":"verified"}, checkIfUserIsVerified);
 
 this.add({"entity":"user","create":"new"}, createUserWhileCheckingForExistingUser);
 this.add({"entity":"user","update":"flags"}, updateVerifiedFlags);
+this.add({"entity":"user","change":"password"}, changePassword);
+
 
 const moment = require("moment");
 const uuidV4 = require("uuid/v4");
 
 function checkIfUserIsVerified(msg,respond){
-   var user = this.make$("user");
+  var user = this.make$("user");
   var email = msg.email;
   user.load$({ email: email }, function (err, user) {
     if (err) {
@@ -178,6 +180,31 @@ function createUserWhileCheckingForExistingUser(msg, respond) {
           });
         })
   }
+
+  function changePassword(msg, respond) {
+    var user = this.make('user');
+        user.load$({email: msg.email}, function (err, result) {
+          if (!result) {
+            respond({
+              succes: false,
+              message: "User could not be found!"
+            });
+          }
+          result.data$({
+            password: msg.password
+          });
+          result.save$(function (err, user) {
+            respond(err, {
+              succes: true,
+              message: "Succesfully changed the password!",
+              uuid: user.uuid,
+            })
+          });
+        })
+  }
+
+
+
 };
 
  

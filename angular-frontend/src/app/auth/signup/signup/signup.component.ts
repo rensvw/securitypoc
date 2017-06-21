@@ -4,6 +4,7 @@ import {FormGroup, FormControl, Validators, FormBuilder, AbstractControl } from 
 import { IUser } from './../../user';
 import { AuthService } from './../../auth.service';
 import 'rxjs/add/operator/debounceTime';
+import { CustomValidators } from 'ng2-validation';
 
 @Component({
   selector: 'app-signup',
@@ -16,14 +17,14 @@ export class SignupComponent implements OnInit {
   pageTitle: string = 'Create new account';
   showError: boolean = false;
   showSpinner: boolean = false;
-
+  validateEmai;
 
   constructor(private _router: Router, private _authService: AuthService, private _formBuilder: FormBuilder) { }
  
   ngOnInit() {
     this.userForm = this._formBuilder.group({
-      password: ['', Validators.compose([Validators.required, Validators.minLength(5)])],
-      email: ['', Validators.required],
+      password: ['', Validators.compose([Validators.required, Validators.minLength(8)])],
+      email: ['', [Validators.required,CustomValidators.email]],
       fullName: ['', Validators.required],
     });
   }

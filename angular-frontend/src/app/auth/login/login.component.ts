@@ -3,6 +3,8 @@ import { AuthService } from './../auth.service';
 import { Router } from '@angular/router';
 import { ICredentials } from './../credentials';
 import { IMultiSelectOption, IMultiSelectTexts, IMultiSelectSettings } from 'angular-2-dropdown-multiselect';
+import {FormGroup, FormControl, Validators, FormBuilder, AbstractControl } from '@angular/forms';
+import { CustomValidators } from 'ng2-validation';
 
 @Component({
   selector: 'app-login',
@@ -19,10 +21,21 @@ export class LoginComponent implements OnInit {
   myOptions: IMultiSelectOption[]
   myTexts: IMultiSelectTexts
   mySettings: IMultiSelectSettings
+  loginForm;
 
-  constructor(private _authService: AuthService, private _router: Router) { }
+  constructor(private _authService: AuthService, private _router: Router, private _formBuilder: FormBuilder) { }
 
   ngOnInit() {
+
+    let email = new FormControl('', [Validators.required,CustomValidators.email]);
+    let password = new FormControl('', [Validators.required, Validators.minLength(8)]);
+    
+ 
+    this.loginForm = new FormGroup({
+      email: email,
+      password: password,
+    });
+
     this.optionsModel = [2];
     this.mySettings = {
     enableSearch: true,

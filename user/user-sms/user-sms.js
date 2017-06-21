@@ -8,6 +8,8 @@ module.exports = function flag( options ) {
   this.add({entity:"user-sms",update:"new"}, updateNewSMSSession);
   this.add({entity:"user-sms",get:"user"}, getSMSUserSession);
   this.add({entity:"user-sms",get:"uuid"}, getSMSUserSessionWithID);
+  this.add({entity:"user-sms",get:"phoneNumber"}, getSMSUserSessionWithPhoneNumber);
+  
   this.add({entity:"user-sms",crud:"user"}, updateOrCreateNewSession);
 
   function getSMSUserSessionWithID(msg, respond) {
@@ -20,6 +22,33 @@ module.exports = function flag( options ) {
         respond(err, null);
       }
       
+      if (userSMS) {
+        respond(err, {
+          succes: true,
+          phoneNumber: userSMS.phoneNumber,
+          uuid: userSMS.uuid,
+          countryCode: userSMS.countryCode,
+          session: userSMS.session
+        });
+      }
+    });
+  }
+
+  function getSMSUserSessionWithPhoneNumber(msg, respond) {
+    var userSMS = this.make$("userSMSSession");
+    let phoneNumber = msg.phoneNumber;
+    userSMS.load$({
+      phoneNumber: phoneNumber
+    }, function (err, userSMS) {
+      if (err) {
+        respond(err, null);
+      }
+      if(!userSMS){
+        respond(null,{
+          succes:false,
+          message:"Could not find an user!"
+        })
+      }
       if (userSMS) {
         respond(err, {
           succes: true,

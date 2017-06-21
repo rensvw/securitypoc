@@ -5,3 +5,57 @@
 .pull-right {
   float: right;
 }
+
+
+.btn-primary {
+   background-color:#333666; 
+   color: white;
+   border-color: #333666
+}
+.btn-primary:hover {
+   color: white;
+   font-weight: bold;
+   background-color: #3e427d ;
+   border-color: #3e427d
+   
+}
+.btn-primary:click {
+   color: white;
+   font-weight: bold;
+   background-color: #3e427d ;
+   border-color: #cc3399;
+   -webkit-box-shadow: 0 8px 6px -6px #cc3399 ;
+   -moz-box-shadow: 0 8px 6px -6px #cc3399 ;
+   box-shadow: 0 8px 6px -6px #cc3399 ;
+   
+}
+.btn-primary:active {
+   color: white;
+   font-weight: bold;
+   background-color: #3e427d ;
+   border-color: #cc3399;
+   -webkit-box-shadow: 0 8px 6px -6px #cc3399 ;
+   -moz-box-shadow: 0 8px 6px -6px #cc3399 ;
+   box-shadow: 0 8px 6px -6px #cc3399 ;
+   
+}
+.btn-primary:clicked {
+   color: white;
+   font-weight: bold;
+   background-color: #3e427d ;
+   border-color: #cc3399;
+   -webkit-box-shadow: 0 8px 6px -6px #cc3399 ;
+   -moz-box-shadow: 0 8px 6px -6px #cc3399 ;
+   box-shadow: 0 8px 6px -6px #cc3399 ;
+   
+}
+
+.dropdown-item{
+  color: #333666
+}
+.signuptext{
+  color: #333666
+}
+.dropdownselect{
+  background-color: #333666
+}

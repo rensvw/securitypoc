@@ -15,6 +15,7 @@ import { SignupSmsComponent } from './signup/signup-sms/signup-sms.component';
 import { SignupAppComponent } from './signup/signup-app/signup-app.component';
 import { SignupVerifyComponent } from './signup/signup-verify/signup-verify.component';
 import { QRCodeModule } from 'angular2-qrcode';
+import { ChangePasswordComponent } from './settings/change-password/change-password.component';
 
 export function authHttpServiceFactory(http: Http, options: RequestOptions) {
   return new AuthHttp(new AuthConfig({tokenName: 'token',
@@ -39,7 +40,7 @@ export function authHttpServiceFactory(http: Http, options: RequestOptions) {
         MultiselectDropdownModule,
         QRCodeModule],
     exports: [],
-    declarations: [LoginComponent, ProfileComponent, SignupComponent, VerifyComponent, SignupSmsComponent, SignupAppComponent, SignupVerifyComponent]
+    declarations: [LoginComponent, ProfileComponent, SignupComponent, VerifyComponent, SignupSmsComponent, SignupAppComponent, SignupVerifyComponent, ChangePasswordComponent]
 })
 
 export class AuthModule {

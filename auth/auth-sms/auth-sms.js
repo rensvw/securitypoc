@@ -60,7 +60,12 @@ function signupAndSendSMS(msg, respond) {
   let countryCode = msg.countryCode;
   let email = msg.email;
   let password = msg.password;
-  act("entity:user,get:email", {
+  act("entity:user-sms,get:phoneNumber",{phoneNumber: phoneNumber})
+  .then((user)=>{
+    if(user.succes){
+      return respond({ succes: false, message:"An user with this phonenumber already exists!"})
+    }
+    return act("entity:user,get:email", {
       email: email
     })
     .then((user) => {
@@ -89,14 +94,14 @@ function signupAndSendSMS(msg, respond) {
                         return respond(result);
                       })
                       .catch((err) => {
-                        return respond(err);
+                        return respond(err,null);
                       })
                   } else {
-                    return respond(user);
+                    return respond(null,user);
                   }
                 })
                 .catch((err) => {
-                  respond(err);
+                  return respond(err,null);
                 })
 
             } else {
@@ -107,12 +112,16 @@ function signupAndSendSMS(msg, respond) {
             }
           })
           .catch((err) => {
-            respond(err);
+            return respond(err,null);
           })
       }
     }).catch((err) => {
-      respond(err);
+      return respond(err,null);
     })
+  })
+  .catch((err)=>{
+    return respond(err,null);
+  })
 }
 
 function verifySMSCodeBySignUp(msg, respond) {

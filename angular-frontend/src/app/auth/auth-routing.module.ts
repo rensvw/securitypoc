@@ -9,6 +9,8 @@ import { SignupAppComponent } from './signup/signup-app/signup-app.component';
 import { SignupSmsComponent } from './signup/signup-sms/signup-sms.component';
 import { SignupVerifyComponent } from './signup/signup-verify/signup-verify.component';
 import { VerifyComponent } from './verify/verify.component';
+import { ChangePasswordComponent } from './settings/change-password/change-password.component';
+
 
 @NgModule({
   imports: [RouterModule.forChild([
@@ -16,6 +18,7 @@ import { VerifyComponent } from './verify/verify.component';
       { path: 'signup/verify',  component: SignupVerifyComponent },
       { path: 'settings/phonenumber',  canActivate: [AuthGuard],component: SignupSmsComponent },
       { path: 'settings/authenticator',  canActivate: [AuthGuard],component: SignupAppComponent },
+      { path: 'settings/change-password',  canActivate: [AuthGuard],component: ChangePasswordComponent },
       { path: 'login', component: LoginComponent },
       { path: 'verify', component: VerifyComponent },
     ])],

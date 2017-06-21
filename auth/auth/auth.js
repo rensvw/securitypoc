@@ -27,6 +27,42 @@ module.exports = function auth(options) {
       
   }
 
+  function changePassword(msg,respond){
+    let oldPassword = msg.oldPassword
+    if(msg.newPassword1 != msg.newPassword2){
+      return respond({succes: "false", message: "The new passwords don't match"})
+    }
+    if(oldPassword == msg.newPassword1){
+      return respond({succes: "false", message: "The new password can not be the same as the old one!"})      
+    }
+    act("entity:user,get:email", {email: msg.email})
+      .then((user) => {
+        if (!user.succes) {
+          return respond({succes: false,message: "User could not been found!"});
+        } 
+        act("role:hash,cmd:comparePasswords", {password: oldPassword ,hash: user.password})
+          .then((result)=>{
+            if (result.succes) {
+              return act("role:hash,cmd:newHash",{password: msg.newPassword1})
+                .then((hash)=>{
+                  return act("entity:user,change:password",{password: hash.password, email: msg.email})
+                    .then((data)=>{
+                      if(data.succes){
+                        return respond({succes:true,message: "Succefully changed the password!"})
+                      }
+                      return respond({succes:false,message: "Something wen't wrong saving the password in the database!"})
+                    })
+                    .catch((err)=>respond(err,null))
+                 })
+                 .catch((err)=>respond(err,null))
+            }
+            return respond({succes: false,message: "Old password is incorrect!"});
+          })
+          .catch((err)=>respond(err,null))
+      })
+      .catch((err)=>respond(err,null))
+}
+
   function authenticate(msg, respond) {
     let email = msg.email;
     let password = msg.password;
@@ -38,7 +74,7 @@ module.exports = function auth(options) {
         if (!user.succes) {
           return respond({
             succes: false,
-            message: "Username or password is incorrect!"
+            message: "User could not been found!"
           });
         } else {
           act("role:hash,cmd:comparePasswords", {
@@ -73,35 +109,9 @@ module.exports = function auth(options) {
       });
   }
 
-  function checkVerifiedAuthMethods(msg,respond){
-    let email = msg.email;
-    let sms = msg.sms;
-    let app = msg.app;
-    let mail = msg.mail;
-    let array = [];
-    act("entity:user,get:email", {email: msg.email })
-    .then((user)=>{
-      console.log(user)
-      if(user.verified.sms !== msg.sms){
-        return respond({succes:false,message:"You didn't register a phone number to your account!"})
-      }
-      else if(user.verified.app !== msg.app){
-        return respond({succes:false,message:"You didn't register an authenticator app to your account!"})
-      }
-      else if(user.verified.mail !== msg.mail){
-        return respond({succes:false,message:"You didn't verify your email adres!"})        
-      }
-      else{
-        return respond({succes:true,message:"All methods can be used!"});
-      }
-    })
-    .catch((err)=>{
-      return respond(err,null);
-    })
-  }
-
-
-  this.add({role:"auth",check:"verified"}, checkVerifiedAuthMethods);
+ 
   this.add({role:"auth",cmd:"authenticate",mfa:"none"}, authenticate);
+  this.add({role:"auth",change:"password"}, changePassword);
+  
 
   };

@@ -20,7 +20,9 @@
        <div class="form-group">
         <label>Code:</label>
         <input class="form-control" type="text" placeholder="code" [formControl]="userForm.controls['code']" >
-
+          <div *ngIf="userForm.controls['code'].hasError('required') && userForm.controls['code'].touched" class="alert alert-danger">You must enter the code provided by the app!</div>
+        <div *ngIf="userForm.controls['code'].hasError('minlength') && userForm.controls['code'].touched" class="alert alert-danger">The code needs to be exactly 6 digits long!</div>
+        <div *ngIf="userForm.controls['code'].hasError('maxlength') && userForm.controls['code'].touched" class="alert alert-danger">The code needs to be exactly 6 digits long!</div>
       </div>
 
 
@@ -28,6 +30,8 @@
       <div class="form-group">
         <label>Password:</label>
         <input class="form-control" type="password" placeholder="Password" [formControl]="userForm.controls['password']">
+          <div *ngIf="userForm.controls['password'].hasError('required') && userForm.controls['password'].touched" class="alert alert-danger">You must provide a password!</div>
+        <div *ngIf="userForm.controls['password'].hasError('minlength') && userForm.controls['password'].touched" class="alert alert-danger">The password needs to be at least 8 characters long!</div>
       </div>
 
        

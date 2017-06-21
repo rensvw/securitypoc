@@ -178,7 +178,7 @@ const loginWithMFA = (request, reply) => {
       if(respond.returnToken){
         return reply({
           succes: respond.succes,
-          message: respond.message,
+          message: "Welcome!",
           redirectTo: 'home',
           email: respond.user.email,
           token: createToken(respond.user)
@@ -187,7 +187,7 @@ const loginWithMFA = (request, reply) => {
       else{
         return reply({
           succes: respond.succes,
-          message: respond.message,
+          message: "First step succeeded, lets go to the next one!",
           redirectTo: respond.redirectTo,
           uuid: respond.uuid
         });
@@ -453,6 +453,37 @@ const signupVerifySMS = (request, reply) => {
   });
 };
 
+const changePassword = (request, reply) => {
+  let oldPassword= request.payload.oldPassword;
+  let newPassword1= request.payload.newPassword1;
+  let newPassword2= request.payload.newPassword2;
+  let email= request.payload.email;
+  server.seneca.act("role:auth,change:password", {
+    oldPassword: oldPassword,
+    newPassword1: newPassword1,
+    newPassword2: newPassword2,
+    email: email
+  }, function(err,respond){
+    if (err) {
+      reply(err);
+    } else if (respond.succes) {
+      if(respond.returnToken){
+        return reply({
+          succes: respond.succes,
+          message: respond.message,
+          redirectTo: "home",
+        });
+      }
+      else{
+        return reply(respond);
+      }
+    } else if (!respond.succes) {
+     reply({succes:respond.succes,
+      message: respond.message})
+    }
+  });
+}
+
   // Routes
   server.route([{
       method: "GET",
@@ -499,6 +530,23 @@ const signupVerifySMS = (request, reply) => {
           }
         },
         handler: signupVerifyApp
+      }
+    },{
+      method: "POST",
+      path: "/api/settings/change-password",
+      config: {
+        description: "Changes the password",
+        notes: "Change the password",
+        tags: ["api"],
+        validate: {
+          payload: {
+            email: Joi.string().required(),
+            oldPassword: Joi.string().min(6).required(),
+            newPassword1: Joi.string().min(8).required(),
+            newPassword2: Joi.string().min(8).required()            
+          }
+        },
+        handler: changePassword
       }
     },{
       method: "POST",

@@ -97,7 +97,10 @@ module.exports = function auth(options) {
               return respond(err);
             })
         } else {
-          return respond(message);
+          return respond({
+                  succes: false,
+                  message: "Username or password is incorrect!"
+                });
         }
       })
       .catch((err) => {

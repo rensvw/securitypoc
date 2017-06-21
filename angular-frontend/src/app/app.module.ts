@@ -12,6 +12,7 @@ import { HomeComponent } from "./home/home.component";
 import { FooterComponent } from "./footer/footer.component";
 import { AuthService } from "./auth/auth.service";
 import { AuthGuard } from "./auth/auth-guard.service";
+import { CustomFormsModule } from 'ng2-validation'
 
 @NgModule({
   declarations: [
@@ -26,6 +27,9 @@ import { AuthGuard } from "./auth/auth-guard.service";
     NgbModule.forRoot(),
     AuthModule,
     AppRoutingModule,
+    FormsModule,
+   CustomFormsModule
+    
   ],
   providers: [AuthService, AuthGuard],
   bootstrap: [AppComponent]

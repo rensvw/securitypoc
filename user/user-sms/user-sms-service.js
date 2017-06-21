@@ -10,7 +10,6 @@ seneca
   .use("mongo-store", {
   uri: "mongodb://rensvanw:zb74jt3bzn.@ds157439.mlab.com:57439/qnh"
   //uri: "mongodb://172.17.0.2:27017/QNHSecurityPoC"
-  
 })
 .use("zipkin-tracer", {sampling:1})
   .use("mesh",{
@@ -21,6 +20,7 @@ seneca
           "entity:user-sms,update:new",
           "entity:user-sms,get:user",
           "entity:user-sms,get:uuid",          
+          "entity:user-sms,get:phoneNumber",          
           "entity:user-sms,crud:user",]
       }],
         host:HOST,

@@ -24,7 +24,7 @@ export class SignupSmsComponent implements OnInit {
     this.userForm = this._formBuilder.group({
       phoneNumber: ['', Validators.required],
       countryCode: ['', Validators.required],
-      password: ['', Validators.required]
+      password: ['', [Validators.required,Validators.minLength(8)]]
     });
   }
 

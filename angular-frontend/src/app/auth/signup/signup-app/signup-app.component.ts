@@ -31,7 +31,7 @@ export class SignupAppComponent implements OnInit {
 
   ngOnInit() {
     this.userForm = this._formBuilder.group({
-      code: ['', Validators.required],
+      code: ['', [Validators.required,Validators.minLength(6),Validators.maxLength(6)]],
       password: ['', Validators.required]
     });
       this.email = localStorage.getItem('email');
