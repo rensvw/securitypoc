@@ -14,7 +14,7 @@
         <div *ngIf="verifyForm.controls['code'].hasError('maxlength') && verifyForm.controls['code'].touched" class="alert alert-danger">The code needs to be exactly 6 digits long!</div>
       </div>
           
-     
+      <button type="button" class="btn btn-primary" (click)="goBack()">Back</button>
       <button type="submit" [disabled]="verifyForm.invalid" class="btn btn-primary pull-right"><i *ngIf='showSpinner'class="fa fa-spinner fa-spin"></i> Verify</button>
       </form>
       
