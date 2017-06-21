@@ -47,12 +47,18 @@ export class AuthService {
             .subscribe(
                 data => {
                     this.succes = data.succes;
-                     console.log(data)
+                    if(!data.succes){
+                        alert(data.message);
+                    }
                  },
                  error => console.log(error),
                  () => {
                      if (this.succes) {
                          this._router.navigate(['home']);
+                         alert("Password succesfully changed!")
+                     }
+                     else{
+                         alert("something went wrong!")
                      }
 
 
@@ -70,8 +76,8 @@ export class AuthService {
                      this.uuid = data.uuid;
                      this.succes = data.succes
                      this.message = data.message;
-                     if(!this.succes){
-                         alert(this.message)
+                      if(data.succes == false){
+                         alert(data.message)
                      }
                  },
                  error => {
@@ -84,7 +90,7 @@ export class AuthService {
                              this._router.navigate(['home']);
                              break;
                          case "verifyEmailPage":
-                             this._router.navigate(['signup/verify'], {
+                             this._router.navigate(['signup/verify/email'], {
                                  queryParams: {
                                      uuid: this.uuid,
                                      verify: "email"
@@ -103,16 +109,21 @@ export class AuthService {
                  data => {
                      this.redirectTo = data.redirectTo;
                      this.uuid = data.uuid;
-                     console.log(data)
+                     if(data.succes == false){
+                         alert(data.message)
+                     }
                  },
-                 error => console.log(error),
+                 error => {
+                     console.log(error)
+                     alert("This phonenumber is already registered!")
+                 },
                  () => {
                      switch (this.redirectTo) {
                          case "home":
                              this._router.navigate(['home']);
                              break;
                          case "verifySMSPage":
-                             this._router.navigate(['signup/verify'], {
+                             this._router.navigate(['signup/verify/sms'], {
                                  queryParams: {
                                      uuid: this.uuid,
                                      verify: "sms"
@@ -131,11 +142,14 @@ export class AuthService {
              .subscribe(
                  data => {
                      this.succes = data.succes;
-                     console.log(data)
+                     if(!data.succes){
+                         alert(data.message)
+                     }
                  },
                  error => console.log(error),
                  () => {
                      if (this.succes) {
+                         alert("Your authenticator app is verified and registered!")
                          this._router.navigate(['home']);
                      }
 
@@ -169,6 +183,7 @@ export class AuthService {
                      if (data.token) {
                          localStorage.setItem('token', data.token);
                          localStorage.setItem('email', data.email);
+                         localStorage.setItem('name', data.fullName);                         
                      }
                  },
                  error => {
@@ -181,7 +196,7 @@ export class AuthService {
                              this._router.navigate(['home']);
                              break;
                          case "verifyEmailPage":
-                             this._router.navigate(['verify'], {
+                             this._router.navigate(['verify/email'], {
                                  queryParams: {
                                      uuid: this.uuid,
                                      verify: "email"
@@ -189,7 +204,7 @@ export class AuthService {
                              });
                              break;
                          case "verifySMSPage":
-                             this._router.navigate(['verify'], {
+                             this._router.navigate(['verify/sms'], {
                                  queryParams: {
                                      uuid: this.uuid,
                                      verify: "sms"
@@ -197,7 +212,7 @@ export class AuthService {
                              });
                              break;
                          case "verifyAppPage":
-                             this._router.navigate(['verify'], {
+                             this._router.navigate(['verify/app'], {
                                  queryParams: {
                                      uuid: this.uuid,
                                      verify: "app"
@@ -240,26 +255,29 @@ export class AuthService {
                      this.succes = data.succes;
                      this.uuid = data.uuid;
                      if (data.token) {
-                         console.log("TOKEN:", data.token);
                          localStorage.setItem('token', data.token);
                          localStorage.setItem('email', data.email);
+                         localStorage.setItem('name', data.fullName);
+                         
 
                      }
                  },
                  error => console.log(error),
                  () => {
                      if (!this.succes) {
+                         alert("The code is incorrect! Please try again!")
                          return {
                              succes: false,
                              message: "The code is incorrect!"
                          }
+                         
                      }
                      switch (this.redirectTo) {
                          case "home":
                              this._router.navigate(['home']);
                              break;
                          case "verifyEmailPage":
-                             this._router.navigate(['verify'], {
+                             this._router.navigate(['verify/email'], {
                                  queryParams: {
                                      uuid: this.uuid,
                                      verify: "email"
@@ -267,7 +285,7 @@ export class AuthService {
                              });
                              break;
                          case "verifySMSPage":
-                             this._router.navigate(['verify'], {
+                             this._router.navigate(['verify/sms'], {
                                  queryParams: {
                                      uuid: this.uuid,
                                      verify: "sms"
@@ -275,7 +293,7 @@ export class AuthService {
                              });
                              break;
                          case "verifyAppPage":
-                             this._router.navigate(['verify'], {
+                             this._router.navigate(['verify/app'], {
                                  queryParams: {
                                      uuid: this.uuid,
                                      verify: "app"
@@ -319,17 +337,33 @@ export class AuthService {
                      this.succes = data.succes;
                      this.redirectTo = data.redirectTo;
                      this.uuid = data.uuid;
-
+                      if(data.succes == false){
+                         alert(data.message)
+                     }
                  },
                  error => console.log(error),
                  () => {
                      if (!this.succes) {
+                         alert("The code is incorrect! Please try again!")
                          return {
                              succes: false,
                              message: "The code is incorrect!"
                          }
                      }
+                      switch (credentials.verifyType) {
+                            case "email":
+                                alert("Your email is verified and registered!")
+                                break;
+                            case "sms":
+                                alert("Your phonenumber is verified and registered!")
+                                break;
+                            case "app":
+                                alert("Your authenticator app is verified and registered!")
+                                break;
+                        }
                      this._router.navigate(['home']);
+                     
+                       
                  }
              );
      }

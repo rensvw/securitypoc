@@ -10,12 +10,17 @@ import { AuthRoutingModule } from './auth-routing.module';
 import { LoginComponent } from './login/login.component';
 import { ProfileComponent } from './profile/profile.component';
 import { SignupComponent } from './signup/signup/signup.component';
-import { VerifyComponent } from './verify/verify.component';
 import { SignupSmsComponent } from './signup/signup-sms/signup-sms.component';
 import { SignupAppComponent } from './signup/signup-app/signup-app.component';
-import { SignupVerifyComponent } from './signup/signup-verify/signup-verify.component';
+import { SignupVerifyAppComponent } from './signup/signup-verify/verify-app/verify-app.component';
+import { SignupVerifyEmailComponent } from './signup/signup-verify/verify-email/verify-email.component';
+import { SignupVerifySmsComponent } from './signup/signup-verify/verify-sms/verify-sms.component';
+
 import { QRCodeModule } from 'angular2-qrcode';
 import { ChangePasswordComponent } from './settings/change-password/change-password.component';
+import { VerifySmsComponent } from './verify/verify-sms/verify-sms.component';
+import { VerifyEmailComponent } from './verify/verify-email/verify-email.component';
+import { VerifyAppComponent } from './verify/verify-app/verify-app.component';
 
 export function authHttpServiceFactory(http: Http, options: RequestOptions) {
   return new AuthHttp(new AuthConfig({tokenName: 'token',
@@ -40,7 +45,7 @@ export function authHttpServiceFactory(http: Http, options: RequestOptions) {
         MultiselectDropdownModule,
         QRCodeModule],
     exports: [],
-    declarations: [LoginComponent, ProfileComponent, SignupComponent, VerifyComponent, SignupSmsComponent, SignupAppComponent, SignupVerifyComponent, ChangePasswordComponent]
+    declarations: [LoginComponent, ProfileComponent, SignupComponent, SignupSmsComponent, SignupAppComponent, SignupVerifyAppComponent,SignupVerifyEmailComponent,SignupVerifySmsComponent, ChangePasswordComponent, VerifySmsComponent, VerifyEmailComponent, VerifyAppComponent]
 })
 
 export class AuthModule {

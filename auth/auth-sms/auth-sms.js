@@ -9,45 +9,25 @@ module.exports = function auth(options) {
 function authenticateAndSendSMSCode(msg, respond) {
   let email = msg.email;
   let password = msg.password;
-  act("role:user,cmd:get", {
-      email: email
-    })
+  act("role:user,cmd:get", {email: email})
     .then((user) => {
       if (user.succes) {
-        act("role:hash,cmd:comparePasswords", {
-            password: password,
-            hash: user.password
-          })
+        return act("role:hash,cmd:comparePasswords", {password: password,hash: user.password})
           .then((authenticated) => {
             if (authenticated.succes) {
-              return act("role:sms,cmd:save,send:false", {
-                  email: email
-                })
+              return act("role:sms,cmd:save,send:true", {email: email})
                 .then((result) => {
-                  return respond({
-                    succes: true,
-                    uuid: result.uuid,
-                    message: "Username and password are correct, we've send you a code in a text message!"
-                  });
-                })
-                .catch((err) => {
-                  return respond(err);
-                });
+                  return respond({succes: true,uuid: result.uuid,message: "Username and password are correct, we've send you a code in a text message!"});})
+                .catch((err) => {return respond(err);});
             } else {
-              return respond({
-                succes: false,
-                message: "Username or password is incorrect!"
-              });
+              return respond({succes: false,message: "Username or password is incorrect!"});
             }
           })
           .catch((err) => {
             return respond(err);
           });
       } else {
-        return respond({
-          succes: false,
-          message: "Username or password is incorrect!"
-        });
+        return respond({succes: false,message: "Username or password is incorrect!"});
       }
     })
     .catch((err) => {
@@ -70,45 +50,22 @@ function signupAndSendSMS(msg, respond) {
     })
     .then((user) => {
       if (user.succes) {
-        act("role:hash,cmd:comparePasswords", {
-            password: password,
-            hash: user.password
-          })
+        return act("role:hash,cmd:comparePasswords", {password: password,hash: user.password})
           .then((authenticated) => {
             if (authenticated.succes) {
-              return act("entity:user-mfa,crud:user", {
-                  email: msg.email,
-                  mail: 1,
-                  sms: 0,
-                  app: 1
-                })
+              return act("entity:user-mfa,crud:user", {email: msg.email,mail: 1,sms: 0,app: 1})
                 .then((user) => {
                   if (user.succes) {
-                    return act("role:sms,cmd:save,send:false", {
-                        email: email,
-                        uuid: user.uuid,
-                        phoneNumber: phoneNumber,
-                        countryCode: countryCode
-                      })
-                      .then((result) => {
-                        return respond(result);
-                      })
-                      .catch((err) => {
-                        return respond(err,null);
-                      })
+                    return act("role:sms,cmd:save,send:true", {email: email,uuid: user.uuid,phoneNumber: phoneNumber,countryCode: countryCode})
+                      .then((result) => {return respond(null,result);})
+                      .catch((err) => {return respond(err,null);})
                   } else {
                     return respond(null,user);
                   }
                 })
-                .catch((err) => {
-                  return respond(err,null);
-                })
-
+                .catch((err) => {return respond(err,null);})
             } else {
-              return respond({
-                succes: 'false',
-                message: "Password is not correct!"
-              })
+              return respond({succes:false,message: "Password is not correct!"})
             }
           })
           .catch((err) => {
@@ -128,9 +85,7 @@ function verifySMSCodeBySignUp(msg, respond) {
   let uuid = msg.uuid;
   let code = msg.code;
   let seneca = this;
-  act("entity:user-sms,get:uuid", {
-      uuid: uuid
-    })
+  act("entity:user-sms,get:uuid", {uuid: uuid})
     .then((user) => {
       if (!user) {
         respond(user);
@@ -138,117 +93,66 @@ function verifySMSCodeBySignUp(msg, respond) {
         let newTime = moment(user.session.timeCreated).add(4, "m");
         if (newTime > moment()) {
           if (code == user.session.code) {
-            return act("entity:user-mfa,change:flags", {
-                uuid: msg.uuid,
-                sms: 1
-              })
+            return act("entity:user-mfa,change:flags", {uuid: msg.uuid,sms: 1})
               .then((data) => {
                 if (data.succes) {
-                  return act("entity:user,update:flags", {
-                      email: data.email,
-                      sms: 1
-                    })
+                  return act("entity:user,update:flags", {email: data.email,sms: 1})
                     .then((response) => {
-                      return respond({
-                        succes: true,
-                        returnToken: true,
-                        user: {
-                          email: response.email,
-                        },
-                        message: "All codes are correct, welcome!"
-                      });
-                    })
-                    .catch((err) => {
-                      return respond(err);
-                    })
+                      return respond({succes: true,returnToken: true,user: {email: response.email,},message: "All codes are correct, welcome!"});})
+                    .catch((err) => {return respond(err);})
                 } else {
-                  return respond({
-                    succes: false,
-                    message: "Something wen't wrong in the database!"
-                  });
+                  return respond({succes: false,message: "Something wen't wrong in the database!"});
                 }
               })
-              .catch((err) => {
-                respond(err);
-              })
+              .catch((err) => {return respond(err);})
           } else {
-            respond({
-              succes: false,
-              message: "Code is incorrect!"
-            })
+            return respond({succes: false,message: "Code is incorrect!"})
           }
         } else {
-          respond({
-            succes: false,
-            message: "you are to late!"
-          })
+          return respond({succes: false,message: "you are to late!"})
         }
       }
     })
-    .catch(function (err) {
-      respond(err);
-    })
+    .catch(function (err) {return respond(err);})
 }
 
 function verifySMSCodeMFA(msg, respond) {
   let uuid = msg.uuid;
   let code = msg.code;
   let seneca = this;
-  act("entity:user-sms,get:uuid", {
-      uuid: uuid
+  act("entity:user-sms,get:uuid", {uuid: uuid
     })
     .then((user) => {
       if (!user) {
-        respond(user);
+        return respond(user);
       } else if (user) {
         let newTime = moment(user.session.timeCreated).add(4, "m");
         if (newTime > moment()) {
           if (code == user.session.code) {
-            return act("entity:user-mfa,change:flags", {
-                uuid: msg.uuid,
-                sms: 1
-              })
+            return act("entity:user-mfa,change:flags", {uuid: msg.uuid,sms: 1})
               .then((data) => {
                 if (data.succes) {
-                  act('role:auth,mfa:check', {
-                      uuid: msg.uuid
-                    })
-                    .then((check) => {
-                      return respond(check);
-                    })
-                    .catch((err) => {
-                      return respond(err);
-                    });
+                  act('role:auth,mfa:check', {uuid: msg.uuid})
+                    .then((check) => {return respond(check);})
+                    .catch((err) => {return respond(err);});
                 } else {
-                  return respond({
-                    succes: false,
-                    message: "Something wen't wrong in the database!"
-                  });
+                  return respond({succes: false,message: "Something wen't wrong in the database!"});
                 }
               })
-              .catch((err) => {
-                respond(err);
-              })
+              .catch((err) => {return respond(err);})
           } else {
-            respond({
-              succes: false,
-              message: "Code is incorrect!"
-            })
+            respond({succes: false,message: "Code is incorrect!"})
           }
         } else {
-          respond({
-            succes: false,
-            message: "you are to late!"
-          })
+          respond({succes: false,message: "you are to late!"})
         }
       }
     })
-    .catch(function (err) {
-      respond(err);
+    .catch(function (err) {return respond(err);
     })
 }
 
- this.add({role:"auth",cmd:"authenticate",mfa:"sms"}, authenticateAndSendSMSCode);
+  this.add({role:"auth",cmd:"authenticate",mfa:"sms"}, authenticateAndSendSMSCode);
   this.add({role:"auth",signup:"sms"}, signupAndSendSMS);
   this.add({role:"auth",sms:"verify-signup"}, verifySMSCodeBySignUp);  
   this.add({role:"auth",sms:"verify"}, verifySMSCodeMFA);

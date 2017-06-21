@@ -7,20 +7,29 @@ import { ProfileComponent } from './profile/profile.component';
 import { SignupComponent } from './signup/signup/signup.component';
 import { SignupAppComponent } from './signup/signup-app/signup-app.component';
 import { SignupSmsComponent } from './signup/signup-sms/signup-sms.component';
-import { SignupVerifyComponent } from './signup/signup-verify/signup-verify.component';
-import { VerifyComponent } from './verify/verify.component';
+import { SignupVerifyAppComponent } from './signup/signup-verify/verify-app/verify-app.component';
+import { SignupVerifyEmailComponent } from './signup/signup-verify/verify-email/verify-email.component';
+import { SignupVerifySmsComponent } from './signup/signup-verify/verify-sms/verify-sms.component';
+import { VerifyAppComponent } from './verify/verify-app/verify-app.component';
+import { VerifyEmailComponent } from './verify/verify-email/verify-email.component';
+import { VerifySmsComponent } from './verify/verify-sms/verify-sms.component';
+
 import { ChangePasswordComponent } from './settings/change-password/change-password.component';
 
 
 @NgModule({
   imports: [RouterModule.forChild([
       { path: 'signup',  component: SignupComponent },
-      { path: 'signup/verify',  component: SignupVerifyComponent },
+      { path: 'signup/verify/app',  component: SignupVerifyAppComponent },
+      { path: 'signup/verify/email',  component: SignupVerifyEmailComponent },
+      { path: 'signup/verify/sms',  component: SignupVerifySmsComponent },
       { path: 'settings/phonenumber',  canActivate: [AuthGuard],component: SignupSmsComponent },
       { path: 'settings/authenticator',  canActivate: [AuthGuard],component: SignupAppComponent },
       { path: 'settings/change-password',  canActivate: [AuthGuard],component: ChangePasswordComponent },
       { path: 'login', component: LoginComponent },
-      { path: 'verify', component: VerifyComponent },
+      { path: 'verify/app', component: VerifyAppComponent },
+      { path: 'verify/sms', component: VerifySmsComponent },
+      { path: 'verify/email', component: VerifyEmailComponent },
     ])],
   exports: [RouterModule],
   providers: [AuthGuard]

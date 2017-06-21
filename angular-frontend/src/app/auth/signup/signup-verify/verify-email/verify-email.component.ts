@@ -1,16 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, Params } from '@angular/router';
-import { AuthService } from '../../../auth/auth.service';
-import { ICodeCredentials } from '../../../auth/codeCredentials';
+import { AuthService } from '../../../../auth/auth.service';
+import { ICodeCredentials } from '../../../../auth/codeCredentials';
 import {FormGroup, FormControl, Validators, FormBuilder, AbstractControl } from '@angular/forms';
 import {Location} from '@angular/common';
 
 @Component({
-  selector: 'app-signup-verify',
-  templateUrl: './signup-verify.component.html',
-  styleUrls: ['./signup-verify.component.css']
+  selector: 'app-verify-email',
+  templateUrl: './verify-email.component.html',
+  styleUrls: ['./verify-email.component.css']
 })
-export class SignupVerifyComponent implements OnInit {
+export class SignupVerifyEmailComponent implements OnInit {
 
   constructor(private route: ActivatedRoute,
     private router: Router,
@@ -54,5 +54,6 @@ export class SignupVerifyComponent implements OnInit {
        this._authService.verifySignup(this.signupCredentials);  
        this.verifyForm.reset()
       };
+
 
 }

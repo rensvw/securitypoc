@@ -1,16 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, Params } from '@angular/router';
-import { AuthService } from '../../auth/auth.service';
-import { ICodeCredentials } from '../../auth/codeCredentials';
+import { AuthService } from '../../../auth/auth.service';
+import { ICodeCredentials } from '../../../auth/codeCredentials';
 import {FormGroup, FormControl, Validators, FormBuilder, AbstractControl } from '@angular/forms';
 import {Location} from '@angular/common';
 
 @Component({
-  selector: 'app-verify',
-  templateUrl: './verify.component.html',
-  styleUrls: ['./verify.component.css']
+  selector: 'app-verify-sms',
+  templateUrl: './verify-sms.component.html',
+  styleUrls: ['./verify-sms.component.css']
 })
-export class VerifyComponent implements OnInit {
+export class VerifySmsComponent implements OnInit {
 
   constructor(private route: ActivatedRoute,
     private router: Router,
@@ -19,12 +19,19 @@ export class VerifyComponent implements OnInit {
     private _location: Location
     ) {}
 
-    uuid;
-    verifyType;
+    uuid: string;
+    verifyType: string;
     codeCredentials;
-    verifyForm;
+    verifyForm: FormGroup;
+    verifySms: boolean = false;
+    verifyEmail: boolean = false;
+    verifyApp: boolean = false;
+    showSpinner = false;
+    
 
   ngOnInit() {
+
+
     this.verifyForm = this._formBuilder.group({
       code: ['', Validators.compose([Validators.required, Validators.minLength(6), Validators.maxLength(6)])],
     });
@@ -40,6 +47,7 @@ export class VerifyComponent implements OnInit {
     });
     
     
+    
   }
 
   goBack(): void {
@@ -53,7 +61,10 @@ export class VerifyComponent implements OnInit {
       verifyType: this.verifyType
     }
        this._authService.verify(this.codeCredentials);  
-       this.verifyForm.reset()
+
+       this.verifyForm.reset();
+
       };
+
 
 }

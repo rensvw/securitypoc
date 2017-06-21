@@ -1,0 +1,21 @@
+<div class="card">
+  <h3 class="card-header">Verify your account with an authenticator app! </h3>
+  <div class="card-block">
+<form [formGroup]="verifyForm" (ngSubmit)="verify(verifyForm.value)">
+
+       <div class="form-group" >
+        <label>Please fill in the code you've generated in your authenticator app!:</label>
+        <input class="form-control" type="text" placeholder="code" [formControl]="verifyForm.controls['code']" >
+           <div *ngIf="verifyForm.controls['code'].hasError('required') && verifyForm.controls['code'].touched" class="alert alert-danger">You must enter the code provided by the app!</div>
+        <div *ngIf="verifyForm.controls['code'].hasError('minlength') && verifyForm.controls['code'].touched" class="alert alert-danger">The code needs to be exactly 6 digits long!</div>
+        <div *ngIf="verifyForm.controls['code'].hasError('maxlength') && verifyForm.controls['code'].touched" class="alert alert-danger">The code needs to be exactly 6 digits long!</div>
+      </div>
+          
+      <button type="button" class="btn btn-primary" (click)="goBack()">Back</button>
+      <button type="submit" [disabled]="verifyForm.invalid" class="btn btn-primary pull-right"><i *ngIf='showSpinner'class="fa fa-spinner fa-spin"></i> Verify</button>
+      </form>
+      
+
+
+  </div>
+</div>

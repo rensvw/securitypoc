@@ -16,6 +16,8 @@ export class HomeComponent implements OnInit {
 
   ngOnInit() {
     this.email = localStorage.getItem('email');
+    this.fullName = localStorage.getItem('name');
+    
 
   }
 

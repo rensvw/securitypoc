@@ -181,6 +181,8 @@ const loginWithMFA = (request, reply) => {
           message: "Welcome!",
           redirectTo: 'home',
           email: respond.user.email,
+          fullName: respond.user.fullName,
+          
           token: createToken(respond.user)
         });
       }
@@ -219,6 +221,7 @@ const verifySMSCodeAndLogin = (request, reply) => {
           succes: respond.succes,
           message: respond.message,
           redirectTo: "home",          
+          fullName: respond.user.fullName,
           email: respond.user.email,
           token: createToken(respond.user)
         });
@@ -311,6 +314,7 @@ const verifyEmailCodeAndLogin = (request, reply) => {
           succes: respond.succes,
           message: respond.message,
           redirectTo: "home",
+          fullName: respond.user.fullName,
           email: respond.user.email,
           token: createToken(respond.user)
 
@@ -347,6 +351,7 @@ const verifyTOTPCodeAndLogin = (request, reply) => {
           succes: respond.succes,
           message: respond.message,
           redirectTo: "home",         
+          fullName: respond.user.fullName,
           email: respond.user.email, 
           token: createToken(respond.user)
         });

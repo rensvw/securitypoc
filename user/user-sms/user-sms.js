@@ -105,6 +105,8 @@ module.exports = function flag( options ) {
               succes: true,
               message: "Succesfully started a new sms session!",
               uuid: userSMS.uuid,
+              phoneNumber: userSMS.phoneNumber,
+              countryCode: userSMS.countryCode
             }));
       }
     });
@@ -141,6 +143,8 @@ module.exports = function flag( options ) {
               succes: true,
               message: "Succesfully started a new sms session!",
               uuid: user.uuid,
+              phoneNumber: user.phoneNumber,
+              countryCode: user.countryCode
             })
           });
 

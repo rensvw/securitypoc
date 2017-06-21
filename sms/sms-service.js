@@ -4,7 +4,7 @@ var SILENT = process.env.SILENT || process.argv[4] || "true"
 
 var seneca = require("seneca")({tag: "auth-sms-service"})
 
-  seneca.use(require("./sms2"))
+  seneca.use(require("./sms"))
   .use("zipkin-tracer", {sampling:1})
   .use("mesh",{
     listen: [
