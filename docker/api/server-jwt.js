@@ -101,14 +101,16 @@ server.register([
         {path: "/api/", method: "get"},      
         {path: "/documentation", method: "get"},      
         {path: "/api/login", method: "post"},
-        {path: "/api/login-email", method: "post"},
-        {path: "/api/login-sms", method: "post"},
         {path: "/api/logout", method: "get"},
-        {path: "/api/signup", method: "post"},
-        {path: "/api/verify-email", method: "post"},
-        {path: "/api/verify-sms", method: "post"},
-        {path: "/api/login-app", method: "post"},
-        {path: "/api/verify-app", method: "post"},
+        {path: "/api/signup/email", method: "post"},
+        {path: "/api/signup/app/create/uri", method: "post"},
+        {path: "/api/signup/sms", method: "post"},
+        {path: "/api/verify/email", method: "post"},
+        {path: "/api/verify/sms", method: "post"},
+        {path: "/api/verify/app", method: "post"},
+        {path: "/api/signup/verify/email", method: "post"},
+        {path: "/api/signup/verify/app", method: "post"},
+        {path: "/api/signup/verify/sms", method: "post"},
         
         
     ],
@@ -152,8 +154,9 @@ const testAuth = (request, reply) => {
   });
 }
 
+
 // Function for logging in!
-const login = (request, reply) => {
+const loginWithMFA = (request, reply) => {
   if (request.auth.isAuthenticated) {
     return reply({
       message: "you're already authenticated!"
@@ -161,44 +164,44 @@ const login = (request, reply) => {
   }
   let email = request.payload.email;
   let password = request.payload.password;
-  server.seneca.act("role:auth,cmd:authenticate,mfa:none", {
+  let sms = request.payload.sms;
+  let mail = request.payload.mail;
+  let app = request.payload.app;
+  server.seneca.act("role:auth,mfa:auth", {
     password: password,
-    email: email
+    email: email,
+    sms: sms,
+    mail: mail,
+    app: app
   }, function (err, respond) {
     if (err) {
-      return reply(Boom.badRequest(respond(err)));
+      return reply("yolo");
     } else if (respond.succes) {
-      return reply({
-          respond: respond,
+      if(respond.returnToken){
+        return reply({
+          succes: respond.succes,
+          message: "Welcome!",
+          redirectTo: 'home',
+          email: respond.user.email,
+          fullName: respond.user.fullName,
+          
           token: createToken(respond.user)
         });
+      }
+      else{
+        return reply({
+          succes: respond.succes,
+          message: "First step succeeded, lets go to the next one!",
+          redirectTo: respond.redirectTo,
+          uuid: respond.uuid
+        });
+      }
     } else if (!respond.succes) {
-      return reply(Boom.unauthorized("Username or password is wrong!"));
+      return reply(Boom.unauthorized("Username or password is wrong, or you didn't verify the authentication type!"));
     }
   });
 };
 
-const authorizeAndSendSMSCode = (request,reply) => {
-  if (request.auth.isAuthenticated) {
-    return reply({
-      message: "You're already authenticated!"
-    });
-  }
-  let email = request.payload.email;
-  let password = request.payload.password;
-  server.seneca.act("role:auth,cmd:authenticate,mfa:sms", {
-    password: password,
-    email: email
-  }, function (err, respond) {
-    if (err) {
-      return reply(Boom.badRequest(respond(err)));
-    } else if (respond.succes) {
-      return reply(respond);
-    } else if (!respond.succes) {
-      return reply(Boom.unauthorized("Username or password is wrong!"));
-    }
-  });
-}
 
 const verifySMSCodeAndLogin = (request, reply) => {
   if (request.auth.isAuthenticated) {
@@ -208,18 +211,26 @@ const verifySMSCodeAndLogin = (request, reply) => {
   }
   let code = request.payload.code;
   let uuid = request.payload.uuid;
-  server.seneca.act("role:auth,cmd:verify,mfa:sms", {
+  server.seneca.act("role:auth,sms:verify", {
     code: code,
     uuid: uuid
   }, function (err, respond) {
     if (err) {
       reply(err);
     } else if (respond.succes) {
-    return reply({
+    if(respond.returnToken){
+        return reply({
           succes: respond.succes,
           message: respond.message,
+          redirectTo: "home",          
+          fullName: respond.user.fullName,
+          email: respond.user.email,
           token: createToken(respond.user)
         });
+      }
+      else{
+        return reply(respond);
+      }
     } else if (!respond.succes) {
      reply({succes:respond.succes,
       message: respond.message})
@@ -234,18 +245,14 @@ const logout = (request, reply) => {
 }
 
 // Function for registering!
-const signUp = (request, reply) => {
+const signUpEmail = (request, reply) => {
   let email = request.payload.email;
   let fullName = request.payload.fullName;
   let password = request.payload.password;
-  let countryCode = request.payload.countryCode;
-  let mobilePhoneNumber = request.payload.mobilePhoneNumber;
-  server.seneca.act("role:auth,cmd:signup", {
+  server.seneca.act("role:auth,signup:email", {
     email: email,
     fullName: fullName,
     password: password,
-    countryCode: countryCode,
-    mobilePhoneNumber: mobilePhoneNumber
   }, function (err, respond) {
     if (err) {
       return reply(Boom.badRequest(respond(err, null)));
@@ -255,27 +262,37 @@ const signUp = (request, reply) => {
   });
 };
 
-const authorizeAndSendEmailCode = (request,reply) => {
-  if (request.auth.isAuthenticated) {
-    return reply({
-      message: "you're already authenticated!"
-    });
-  }
+const signUpSMS = (request, reply) => {
   let email = request.payload.email;
+  let phoneNumber = request.payload.phoneNumber;
+  let countryCode = request.payload.countryCode;
   let password = request.payload.password;
-  server.seneca.act("role:auth,cmd:authenticate,mfa:email", {
-    password: password,
-    email: email
+  server.seneca.act("role:auth,signup:sms", {
+    countryCode: countryCode,
+    phoneNumber: phoneNumber,
+    email: email,
+    password: password
   }, function (err, respond) {
     if (err) {
-      return reply(Boom.badRequest(respond(err)));
-    } else if (respond.succes) {
-      
+      return reply(Boom.badRequest(respond(err, null)));
+    } else {
       return reply(respond);
-    } else if (!respond.succes) {
-      return reply(Boom.unauthorized("Username or password is wrong!"));
     }
   });
+};
+
+const createUriApp = (request,reply) => {
+  
+   server.seneca.act("role:auth,create:uri", {
+    email: request.query.email
+  }, function (err, respond) {
+    if (err) {
+      return reply(Boom.badRequest(respond(err, null)));
+    } else {
+      return reply(respond);
+    }
+  });
+
 }
 
 const verifyEmailCodeAndLogin = (request, reply) => {
@@ -286,18 +303,28 @@ const verifyEmailCodeAndLogin = (request, reply) => {
   }
   let code = request.payload.code;
   let uuid = request.payload.uuid;
-  server.seneca.act("role:auth,cmd:verify,mfa:email", {
+  server.seneca.act("role:auth,email:verify", {
     code: code,
     uuid: uuid
   }, function (err, respond) {
     if (err) {
       reply(err);
     } else if (respond.succes) {
-      return reply({
+      console.log(respond);
+      if(respond.returnToken){
+        return reply({
           succes: respond.succes,
           message: respond.message,
+          redirectTo: "home",
+          fullName: respond.user.fullName,
+          email: respond.user.email,
           token: createToken(respond.user)
+
         });
+      }
+      else{
+        return reply(respond);
+      }
     } else if (!respond.succes) {
      reply({succes:respond.succes,
       message: respond.message})
@@ -305,28 +332,6 @@ const verifyEmailCodeAndLogin = (request, reply) => {
   });
 };
 
-const authorizeAndDirectForTOTPApp = (request,reply) => {
-  if (request.auth.isAuthenticated) {
-    return reply({
-      message: "you're already authenticated!"
-    });
-  }
-  let email = request.payload.email;
-  let password = request.payload.password;
-  server.seneca.act("role:auth,cmd:authenticate,mfa:app", {
-    password: password,
-    email: email
-  }, function (err, respond) {
-    if (err) {
-      return reply(Boom.badRequest(respond(err)));
-    } else if (respond.succes) {
-      // redirect
-      return reply(respond);
-    } else if (!respond.succes) {
-      return reply(Boom.unauthorized("Username or password is wrong, or you did not add the authenticator app to your account!"));
-    }
-  });
-}
 
 const verifyTOTPCodeAndLogin = (request, reply) => {
   if (request.auth.isAuthenticated) {
@@ -336,24 +341,155 @@ const verifyTOTPCodeAndLogin = (request, reply) => {
   }
   let code = request.payload.code;
   let uuid = request.payload.uuid;
-  server.seneca.act("role:auth,cmd:verify,mfa:app", {
+  server.seneca.act("role:auth,app:verify", {
     code: code,
     uuid: uuid
   }, function (err, respond) {
     if (err) {
       reply(err);
     } else if (respond.succes) {
-      return reply({
+      if(respond.returnToken){
+        return reply({
           succes: respond.succes,
           message: respond.message,
+          redirectTo: "home",         
+          fullName: respond.user.fullName,
+          email: respond.user.email, 
           token: createToken(respond.user)
         });
+      }
+      else{
+        return reply(respond);
+      }
     } else if (!respond.succes) {
      reply({succes:respond.succes,
       message: respond.message})
     }
   });
 };
+
+const signupVerifyEmail = (request, reply) => {
+  let uuid = request.payload.uuid;
+  let code = request.payload.code;
+  server.seneca.act("role:auth,signup:verify-email", {
+    uuid: uuid,
+    code: code
+  }, function (err, respond) {
+    if (err) {
+      reply(err);
+    } else if (respond.succes) {
+      if(respond.returnToken){
+        return reply({
+          succes: respond.succes,
+          message: respond.message,
+          email: respond.user.email,
+          redirectTo: "home",          
+          token: createToken(respond.user)
+        });
+      }
+      else{
+        return reply(respond);
+      }
+    } else if (!respond.succes) {
+     reply({succes:respond.succes,
+      message: respond.message})
+    }
+  });
+};
+
+const signupVerifyApp = (request, reply) => {
+  let email = request.payload.email;
+  let code = request.payload.code;
+  let password = request.payload.password;
+  let secret = request.payload.secret;
+  
+  server.seneca.act("role:auth,verify:uri", {
+    email: email,
+    code: code,
+    password: password,
+    secret: secret
+    
+    
+  }, function (err, respond) {
+    if (err) {
+      reply(err);
+    } else if (respond.succes) {
+      if(respond.returnToken){
+        return reply({
+          succes: respond.succes,
+          message: respond.message,
+          email: respond.user.email,
+          redirectTo: "home",          
+        });
+      }
+      else{
+        return reply(respond);
+      }
+    } else if (!respond.succes) {
+     reply({succes:respond.succes,
+      message: respond.message})
+    }
+  });
+};
+
+const signupVerifySMS = (request, reply) => {
+  let uuid = request.payload.uuid;
+  let code = request.payload.code;
+  server.seneca.act("role:auth,sms:verify-signup", {
+    uuid: uuid,
+    code: code
+  }, function (err, respond) {
+    if (err) {
+      reply(err);
+    } else if (respond.succes) {
+      if(respond.returnToken){
+        return reply({
+          succes: respond.succes,
+          message: respond.message,
+          email: respond.user.email,
+          redirectTo: "home",
+        });
+      }
+      else{
+        return reply(respond);
+      }
+    } else if (!respond.succes) {
+     reply({succes:respond.succes,
+      message: respond.message})
+    }
+  });
+};
+
+const changePassword = (request, reply) => {
+  let oldPassword= request.payload.oldPassword;
+  let newPassword1= request.payload.newPassword1;
+  let newPassword2= request.payload.newPassword2;
+  let email= request.payload.email;
+  server.seneca.act("role:auth,change:password", {
+    oldPassword: oldPassword,
+    newPassword1: newPassword1,
+    newPassword2: newPassword2,
+    email: email
+  }, function(err,respond){
+    if (err) {
+      reply(err);
+    } else if (respond.succes) {
+      if(respond.returnToken){
+        return reply({
+          succes: respond.succes,
+          message: respond.message,
+          redirectTo: "home",
+        });
+      }
+      else{
+        return reply(respond);
+      }
+    } else if (!respond.succes) {
+     reply({succes:respond.succes,
+      message: respond.message})
+    }
+  });
+}
 
   // Routes
   server.route([{
@@ -368,6 +504,75 @@ const verifyTOTPCodeAndLogin = (request, reply) => {
         },
         handler: testAuth
       }
+    },{
+      method: "POST",
+      path: "/api/signup/verify/email",
+      config: {
+        description: "After the email is verified, creates the user!",
+        notes: "User created!",
+        tags: ["api"],
+        validate: {
+          payload: {
+            uuid: Joi.string().required(),
+            code: Joi.string().required() 
+          }
+        },
+        handler: signupVerifyEmail
+      }
+    },{
+      method: "POST",
+      path: "/api/signup/verify/app",
+      config: {
+        description: "After the authenticater app code is verified, adds this function to the account!",
+        notes: "Authenticator app added if true",
+        tags: ["api"],
+        
+        validate: {
+          payload: {
+            email: Joi.string().required(),
+            code: Joi.string().required(),
+            password: Joi.string().required(),
+            secret: Joi.string().required()            
+
+          }
+        },
+        handler: signupVerifyApp
+      }
+    },{
+      method: "POST",
+      path: "/api/settings/change-password",
+      config: {
+        description: "Changes the password",
+        notes: "Change the password",
+        tags: ["api"],
+        validate: {
+          payload: {
+            email: Joi.string().required(),
+            oldPassword: Joi.string().min(6).required(),
+            newPassword1: Joi.string().min(8).required(),
+            newPassword2: Joi.string().min(8).required()            
+          }
+        },
+        handler: changePassword
+      }
+    },{
+      method: "POST",
+      path: "/api/signup/verify/sms",
+      config: {
+        description: "After the sms is verified, creates the user!",
+        notes: "SMS User created!",
+        tags: ["api"],
+        auth: {
+            strategy: "jwt"
+        },
+        validate: {
+          payload: {
+            uuid: Joi.string().required(),
+            code: Joi.string().required() 
+          }
+        },
+        handler: signupVerifySMS
+      }
     }, {
       method: "POST",
       path: "/api/login",
@@ -378,30 +583,17 @@ const verifyTOTPCodeAndLogin = (request, reply) => {
         validate: {
           payload: {
             email: Joi.string().email().required(),
-            password: Joi.string().min(2).max(200).required()
+            password: Joi.string().min(2).max(200).required(),
+            sms: Joi.number().integer().min(0).max(1).default(1),
+            mail: Joi.number().integer().min(0).max(1).default(1),
+            app: Joi.number().integer().min(0).max(1).default(1),  
           }
         },
-        handler: login,
+        handler: loginWithMFA,
       }
     }, {
       method: "POST",
-      path: "/api/login-sms",
-      config: {
-        description: "Login route with sms verification",
-        notes: "Returns a guid if username and password are correct.",
-        tags: ["api"],
-        validate: {
-          payload: {
-            email: Joi.string().email().required(),
-            password: Joi.string().min(2).max(200).required()
-          }
-        },
-        handler: authorizeAndSendSMSCode,
-        
-      }
-    }, {
-      method: "POST",
-      path: "/api/verify-sms",
+      path: "/api/verify/sms",
       config: {
         description: "Verify your sms code when logging in",
         notes: "Returns a cookie session if authorised",
@@ -415,25 +607,10 @@ const verifyTOTPCodeAndLogin = (request, reply) => {
         handler: verifySMSCodeAndLogin,
         
       }
-    }, {
+    }, 
+   {
       method: "POST",
-      path: "/api/login-email",
-      config: {
-        description: "Login route with email verification",
-        notes: "Returns a guid if username and password are correct.",
-        tags: ["api"],
-        validate: {
-          payload: {
-            email: Joi.string().email().required(),
-            password: Joi.string().min(2).max(200).required()
-          }
-        },
-        handler: authorizeAndSendEmailCode,
-       
-      }
-    }, {
-      method: "POST",
-      path: "/api/verify-email",
+      path: "/api/verify/email",
       config: {
         description: "Verify your email code when logging in",
         notes: "Returns a cookie session if authorised",
@@ -447,25 +624,9 @@ const verifyTOTPCodeAndLogin = (request, reply) => {
         handler: verifyEmailCodeAndLogin,
 
       }
-    },{
-      method: "POST",
-      path: "/api/login-app",
-      config: {
-        description: "Login route with Authenticator App verification",
-        notes: "Returns a guid if username and password are correct.",
-        tags: ["api"],
-        validate: {
-          payload: {
-            email: Joi.string().email().required(),
-            password: Joi.string().min(2).max(200).required()
-          }
-        },
-        handler: authorizeAndDirectForTOTPApp,
-       
-      }
     }, {
       method: "POST",
-      path: "/api/verify-app",
+      path: "/api/verify/app",
       config: {
         description: "Verify your TOTP code when logging in",
         notes: "Returns a cookie session if authorised",
@@ -477,7 +638,6 @@ const verifyTOTPCodeAndLogin = (request, reply) => {
           }
         },
         handler: verifyTOTPCodeAndLogin,
-
       }
     },
     {
@@ -491,8 +651,23 @@ const verifyTOTPCodeAndLogin = (request, reply) => {
       }
     },
     {
+      method: "GET",
+      path: "/api/signup/app/create/uri",
+      config: {
+        description: "Create the uri for an authenticator app",
+        notes: "Create the uri for an authenticator app",
+        tags: ["api"],
+        validate:{
+          query: {
+            email: Joi.string().email().required()
+          }
+        },
+        handler: createUriApp
+      }
+    },
+    {
       method: "POST",
-      path: "/api/signup",
+      path: "/api/signup/email",
       config: {
         description: "Registers a new user",
         notes: "Returns true if user is created and saved to database",
@@ -501,13 +676,28 @@ const verifyTOTPCodeAndLogin = (request, reply) => {
           payload: {
             email: Joi.string().email().required(),
             password: Joi.string().min(2).max(200).required(),
-            fullName: Joi.string().min(2).max(200).required(),
-            countryCode: Joi.string().min(2).max(5).required(),
-            mobilePhoneNumber: Joi.string().min(2).max(15).required()
+            fullName: Joi.string().min(2).max(200).required()
           }
         },
-        handler: signUp,
-        
+        handler: signUpEmail,
+      }
+    },
+    {
+      method: "POST",
+      path: "/api/signup/sms",
+      config: {
+        description: "Registers a new phonenumber to the user",
+        notes: "Returns true if the phonenumber is created and saved to database",
+        tags: ["api"],
+        validate: {
+          payload: {
+            countryCode: Joi.string().required(),
+            phoneNumber: Joi.string().min(2).max(200).required(),
+            email: Joi.string().email().required(),
+            password: Joi.string().required()
+          }
+        },
+        handler: signUpSMS,
       }
     }
   ]);

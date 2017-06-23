@@ -27,6 +27,7 @@ export class ChangePasswordComponent implements OnInit {
   userForm;
 signUpForm: FormGroup;
 form;
+showSpinner;
 
   ngOnInit() {
     let oldPassword = new FormControl('', [Validators.required, Validators.minLength(8)]);

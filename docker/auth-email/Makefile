@@ -1,6 +1,6 @@
 container :
-	cp ../../auth-email/auth-email.js .
-	cp ../../auth-email/auth-email-service.js .
+	cp ../../auth/auth-email/auth-email.js .
+	cp ../../auth/auth-email/auth-email-service.js .
 	
 	sudo docker build -t auth-email .
 	sudo docker images | grep auth-email

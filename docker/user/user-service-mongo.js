@@ -8,8 +8,8 @@ seneca
   .use("basic")
   .use(require("./user"))
   .use("mongo-store", {
-  //uri: "mongodb://rensvanw:zb74jt3bzn.@ds157439.mlab.com:57439/qnh"
-  uri: "mongodb://172.17.0.2:27017/QNHSecurityPoC"
+  uri: "mongodb://rensvanw:zb74jt3bzn.@ds157439.mlab.com:57439/qnh"
+  //uri: "mongodb://172.17.0.2:27017/QNHSecurityPoC"
   
 })
 .use("zipkin-tracer", {sampling:1})
@@ -17,12 +17,12 @@ seneca
     listen: [
       { 
       pins: [
-      "role:user,cmd:create,checkExistingUser:true", 
-      "role:user,cmd:create",
-      "role:user,cmd:get",
-      "role:user,cmd:get,param:uuid",
-      "role:user,cmd:update,param:uuid",      
-      "role:user,cmd:update,service:2fa"]
+      "entity:user,create:new",
+      "entity:user,get:uuid",
+      "entity:user,get:email",
+      "entity:user,get:verified",
+      "entity:user,change:password",
+      "entity:user","update:flags"]
     }],
     host:HOST,
     bases:BASES,

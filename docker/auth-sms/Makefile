@@ -1,6 +1,6 @@
 container :
-	cp ../../auth-sms/auth-sms.js .
-	cp ../../auth-sms/auth-sms-service.js .
+	cp ../../auth/auth-sms/auth-sms.js .
+	cp ../../auth/auth-sms/auth-sms-service.js .
 	
 	sudo docker build -t auth-sms .
 	sudo docker images | grep auth-sms

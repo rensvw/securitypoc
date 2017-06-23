@@ -17,12 +17,13 @@ export class SignupVerifyAppComponent implements OnInit {
     private _authService: AuthService,
     private _formBuilder: FormBuilder,
     private _location: Location
-    ) {}
+    ) {} 
 
     uuid;
     verifyType;
     signupCredentials;
     verifyForm;
+    showSpinner;
 
   ngOnInit() {
     this.verifyForm = this._formBuilder.group({

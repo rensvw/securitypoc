@@ -9,7 +9,7 @@ require("seneca")({tag: "auth-service"})
     listen: [
       { 
       pins: [
-      "role:auth,cmd:signup", 
+      "role:auth,change:password",
       "role:auth,cmd:authenticate,mfa:none",
       ]
     }],

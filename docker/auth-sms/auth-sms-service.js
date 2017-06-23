@@ -11,6 +11,9 @@ require("seneca")({tag: "auth-sms-service"})
       pins: [
       "role:auth,cmd:authenticate,mfa:sms", 
       "role:auth,cmd:verify,mfa:sms",
+      "role:auth,sms:verify",
+      "role:auth,sms:verify-signup",
+      "role:auth,signup:sms",
       ]
     }],
     bases: BASES,

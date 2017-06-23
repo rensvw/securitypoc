@@ -5,9 +5,7 @@
 
        <div class="form-group" >
         <label>Please fill in the code you've received in a text message:</label>
-        <div *ngIf="verifySms">yolo sms hero</div>
-        <div *ngIf="verifyApp">yolo app hero</div>
-        <div *ngIf="verifyEmail">yolo email hero</div>
+
         <input class="form-control" type="text" placeholder="code" [formControl]="verifyForm.controls['code']" >
         <div *ngIf="verifyForm.controls['code'].hasError('required') && verifyForm.controls['code'].touched" class="alert alert-danger">You must enter the code provided by the app!</div>
         <div *ngIf="verifyForm.controls['code'].hasError('minlength') && verifyForm.controls['code'].touched" class="alert alert-danger">The code needs to be exactly 6 digits long!</div>
@@ -15,7 +13,7 @@
       </div>
           
       <button type="button" class="btn btn-primary" (click)="goBack()">Back</button>
-      <button type="submit" [disabled]="verifyForm.invalid" class="btn btn-primary pull-right"><i *ngIf='showSpinner'class="fa fa-spinner fa-spin"></i> Verify</button>
+      <button type="submit" [disabled]="verifyForm.invalid" class="btn btn-primary pull-right">Verify</button>
       </form>
       
 

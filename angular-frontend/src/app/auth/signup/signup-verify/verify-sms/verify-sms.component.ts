@@ -23,6 +23,7 @@ export class SignupVerifySmsComponent implements OnInit {
     verifyType;
     signupCredentials;
     verifyForm;
+    showSpinner;
 
   ngOnInit() {
     this.verifyForm = this._formBuilder.group({

@@ -22,6 +22,7 @@ export class LoginComponent implements OnInit {
   myTexts: IMultiSelectTexts
   mySettings: IMultiSelectSettings
   loginForm;
+  showSpinner;
 
   constructor(private _authService: AuthService, private _router: Router, private _formBuilder: FormBuilder) { }
 
@@ -65,9 +66,10 @@ export class LoginComponent implements OnInit {
   }
 
   
- onChange() {
+  onChange(event) {
         console.log(this.optionsModel);
     }
+    
   authenticate(formValues){
     this.credentials = {
       email: formValues.email,

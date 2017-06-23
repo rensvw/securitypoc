@@ -18,7 +18,7 @@
     </div>
 
 
-        <button type="submit" [disabled]="loginForm.invalid" class="btn btn-primary pull-right"><i *ngIf='showSpinner'class="fa fa-spinner fa-spin"></i> Login</button>
+        <button type="submit" [disabled]="loginForm.invalid" class="btn btn-primary pull-right">Login</button>
 
       </form>
 <ss-multiselect-dropdown name="multiselect" [options]="myOptions" [texts]="myTexts" [settings]="mySettings" [(ngModel)]="optionsModel" class="dropdownselect" (ngModelChange)="onChange($event)"></ss-multiselect-dropdown>

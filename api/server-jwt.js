@@ -101,14 +101,16 @@ server.register([
         {path: "/api/", method: "get"},      
         {path: "/documentation", method: "get"},      
         {path: "/api/login", method: "post"},
-      
-      
         {path: "/api/logout", method: "get"},
         {path: "/api/signup/email", method: "post"},
+        {path: "/api/signup/app/create/uri", method: "post"},
+        {path: "/api/signup/sms", method: "post"},
         {path: "/api/verify/email", method: "post"},
         {path: "/api/verify/sms", method: "post"},
         {path: "/api/verify/app", method: "post"},
         {path: "/api/signup/verify/email", method: "post"},
+        {path: "/api/signup/verify/app", method: "post"},
+        {path: "/api/signup/verify/sms", method: "post"},
         
         
     ],

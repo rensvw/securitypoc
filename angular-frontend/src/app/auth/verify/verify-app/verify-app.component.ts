@@ -26,6 +26,7 @@ export class VerifyAppComponent implements OnInit {
     verifySms: boolean = false;
     verifyEmail: boolean = false;
     verifyApp: boolean = false;
+    showSpinner;
     
 
   ngOnInit() {

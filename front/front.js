@@ -35,7 +35,7 @@ server.register({
 })
 
 server.route({
-  method: "GET", path: "/api/",
+  method: "GET", path: "/api",
   handler: {
     wo: {
       passThrough: true
@@ -62,7 +62,7 @@ server.route({
 })
 
 server.route({
-  method: "POST", path: "/api/signup",
+  method: "POST", path: "/api/signup/email",
   handler: {
     wo: {
       passThrough: true
@@ -71,25 +71,7 @@ server.route({
 })
 
 server.route({
-  method: "POST", path: "/api/verify-email",
-  handler: {
-    wo: {
-      passThrough: true
-    }
-  }
-})
-
-server.route({
-  method: "POST", path: "/api/verify-sms",
-  handler: {
-    wo: {
-      passThrough: true
-    }
-  }
-})
-
-server.route({
-  method: "POST", path: "/api/verify-app",
+  method: "POST", path: "/api/signup/sms",
   handler: {
     wo: {
       passThrough: true
@@ -106,6 +88,86 @@ server.route({
   }
 })
 
+server.route({
+  method: "POST", path: "/api/signup/verify/app",
+  handler: {
+    wo: {
+      passThrough: true
+    }
+  }
+})
+
+server.route({
+  method: "POST", path: "/api/signup/verify/sms",
+  handler: {
+    wo: {
+      passThrough: true
+    }
+  }
+})
+
+server.route({
+  method: "POST", path: "/api/settings/change-password",
+  handler: {
+    wo: {
+      passThrough: true
+    }
+  }
+})
+
+server.route({
+  method: "POST", path: "/api/verify/email",
+  handler: {
+    wo: {
+      passThrough: true
+    }
+  }
+})
+
+server.route({
+  method: "POST", path: "/api/verify/sms",
+  handler: {
+    wo: {
+      passThrough: true
+    }
+  }
+})
+
+server.route({
+  method: "POST", path: "/api/verify/app",
+  handler: {
+    wo: {
+      passThrough: true
+    }
+  }
+})
+
+server.route({
+  method: "POST", path: "/api/signup/verify/email",
+  handler: {
+    wo: {
+      passThrough: true
+    }
+  }
+})
+
+server.route({
+  method: "POST", path: "/api/signup/app/create/uri",
+  handler: {
+    wo: {
+      passThrough: true
+    }
+  }
+})
+
+server.route({
+  method: "GET", path: "/documentation",
+  handler: {
+    wo: {
+      passThrough: true
+    }
+  }
+})
 
 server.start(function(){
   console.log("front",server.info.uri)

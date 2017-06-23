@@ -1,5 +1,6 @@
 
 "use strict"
+
 var HOST = process.env.HOST || process.argv[2] || "127.0.0.1"
 var BASES = (process.env.BASES || process.argv[3] || "127.0.0.1:39000,127.0.0.1:39001").split(",");
 var SILENT = process.env.SILENT || process.argv[4] || "true"
@@ -15,7 +16,7 @@ var rif = Rif()
 var host = rif(HOST) || HOST
 
 
-server.connection({ 
+server.connection({
   port: 8000
 })
 
@@ -26,15 +27,15 @@ server.register({
   options: {
     bases: BASES,
     sneeze: {
-	host: host,
-	silent: JSON.parse(SILENT),
+      host: host,
+      silent: JSON.parse(SILENT),
         swim: {interval: 1111}
       }
   }
 })
 
 server.route({
-  method: "GET", path: "/api/", 
+  method: "GET", path: "/api",
   handler: {
     wo: {
       passThrough: true
@@ -43,7 +44,7 @@ server.route({
 })
 
 server.route({
-  method: "POST", path: "/api/login", 
+  method: "POST", path: "/api/login",
   handler: {
     wo: {
       passThrough: true
@@ -52,7 +53,7 @@ server.route({
 })
 
 server.route({
-  method: "POST", path: "/api/login-email", 
+  method: "GET", path: "/api/logout",
   handler: {
     wo: {
       passThrough: true
@@ -61,7 +62,7 @@ server.route({
 })
 
 server.route({
-  method: "POST", path: "/api/login-sms", 
+  method: "POST", path: "/api/signup/email",
   handler: {
     wo: {
       passThrough: true
@@ -70,7 +71,7 @@ server.route({
 })
 
 server.route({
-  method: "GET", path: "/api/logout", 
+  method: "POST", path: "/api/signup/sms",
   handler: {
     wo: {
       passThrough: true
@@ -79,7 +80,7 @@ server.route({
 })
 
 server.route({
-  method: "POST", path: "/api/signup", 
+  method: "POST", path: "/api/signup/verify/email",
   handler: {
     wo: {
       passThrough: true
@@ -88,7 +89,7 @@ server.route({
 })
 
 server.route({
-  method: "POST", path: "/api/verify-email", 
+  method: "POST", path: "/api/signup/verify/app",
   handler: {
     wo: {
       passThrough: true
@@ -97,7 +98,7 @@ server.route({
 })
 
 server.route({
-  method: "POST", path: "/api/verify-sms", 
+  method: "POST", path: "/api/signup/verify/sms",
   handler: {
     wo: {
       passThrough: true
@@ -106,7 +107,7 @@ server.route({
 })
 
 server.route({
-  method: "POST", path: "/api/login-app", 
+  method: "POST", path: "/api/settings/change-password",
   handler: {
     wo: {
       passThrough: true
@@ -115,7 +116,7 @@ server.route({
 })
 
 server.route({
-  method: "POST", path: "/api/verify-app", 
+  method: "POST", path: "/api/verify/email",
   handler: {
     wo: {
       passThrough: true
@@ -123,6 +124,50 @@ server.route({
   }
 })
 
+server.route({
+  method: "POST", path: "/api/verify/sms",
+  handler: {
+    wo: {
+      passThrough: true
+    }
+  }
+})
+
+server.route({
+  method: "POST", path: "/api/verify/app",
+  handler: {
+    wo: {
+      passThrough: true
+    }
+  }
+})
+
+server.route({
+  method: "POST", path: "/api/signup/verify/email",
+  handler: {
+    wo: {
+      passThrough: true
+    }
+  }
+})
+
+server.route({
+  method: "POST", path: "/api/signup/app/create/uri",
+  handler: {
+    wo: {
+      passThrough: true
+    }
+  }
+})
+
+server.route({
+  method: "GET", path: "/documentation",
+  handler: {
+    wo: {
+      passThrough: true
+    }
+  }
+})
 
 server.start(function(){
   console.log("front",server.info.uri)

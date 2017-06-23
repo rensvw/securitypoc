@@ -26,28 +26,37 @@ module.exports = function sms(options){
         });
     }
 
-    function sendTextMessageWithCode(msg, respond) {
+
+
+/// nog niet getest
+    function sendTextMessageWithCodeAndSave(msg, respond) {
         act("role:generate,cmd:code")
             .then((generatedCode) => {
-                return act("role:user,cmd:update,service:2fa", {
-                        type: "sms",
+                this.generatedCode = generatedCode
+                return act("entity:user-sms,crud:user", {
                         email: msg.email,
-                        code: generatedCode.code
+                        code: generatedCode.code,
+                        uuid: msg.uuid,
+                        phoneNumber: msg.phoneNumber,
+                        countryCode: msg.countryCode
                     })
-                    .then((savedCode) => {
-                        if (savedCode.succes) {
+                    .then((userSMSSession) => {
+                        this.userSMSSession = userSMSSession;
+                        if (userSMSSession.succes) {
                             return act("role:sms,cmd:send", {
-                                    message: savedCode.code,
-                                    to: savedCode.countryCode + savedCode.mobilePhoneNumber
+                                    message: "Hello, your verification code is: " + this.generatedCode.code,
+                                    to: userSMSSession.countryCode + userSMSSession.phoneNumber
                                 })
                                 .then((smsSent) => {
                                     return respond({
-                                        uuid: savedCode.uuid,
-                                        message: smsSent.message
+                                        uuid: this.userSMSSession.uuid,
+                                        message: smsSent.message,
+                                        redirectTo: "verifySMSPage",
+                                        succes: true
                                     });
                                 })
                                 .catch((err) => {
-                                    respond(err)
+                                    return respond(err)
                                 })
                         } else {
                             return respond({
@@ -65,34 +74,37 @@ module.exports = function sms(options){
 
     function createSMSCodeAndSave(msg, respond) {
         act("role:generate,cmd:code")
-        .then((generatedCode) => {
-            return act("role:user,cmd:update,service:2fa",{ 
-                type:"sms", 
-                email: msg.email, 
-                code: generatedCode.code
+            .then((generatedCode) => {
+                return act("entity:user-sms,crud:user", {
+                        email: msg.email,
+                        code: generatedCode.code,
+                        uuid: msg.uuid,
+                        phoneNumber: msg.phoneNumber,
+                        countryCode: msg.countryCode
+                    })
+                    .then((savedCode) => {
+                        if (savedCode.succes) {
+                            respond(null,{
+                                succes: true,
+                                message: savedCode.message,
+                                uuid: savedCode.uuid,
+                                redirectTo: "verifySMSPage"
+                            });
+                        } else {
+                            respond({
+                                succes: false,
+                                message: savedCode.message,
+                            });
+                        }
+                    })
+            })
+
+            .catch((err) => {
+                respond(err);
             });
-        })
-        .then((savedCode)=>{
-            if(savedCode.succes){
-            respond({
-                succes:true,
-                message: savedCode.message,
-                uuid: savedCode.uuid
-            });
-        }
-        else{
-            respond({
-                succes:false,
-                message: savedCode.message,
-            });
-        }
-        })
-        .catch((err) => {
-            respond(err);
-        });
     }
 
     this.add({role:"sms",cmd:"send"}, sendTextMessage);
-    this.add({role:"sms",cmd:"save",send:"true"}, sendTextMessageWithCode)
-    this.add({role:"sms",cmd:"save",send:"false"}, createSMSCodeAndSave)
+    this.add({role:"sms",cmd:"save",send:"true"}, sendTextMessageWithCodeAndSave);
+    this.add({role:"sms",cmd:"save",send:"false"}, createSMSCodeAndSave);
 }

@@ -1,6 +1,6 @@
 container :
-	cp ../../auth-app/auth-app.js .
-	cp ../../auth-app/auth-app-service.js .
+	cp ../../auth/auth-app/auth-app.js .
+	cp ../../auth/auth-app/auth-app-service.js .
 	
 	sudo docker build -t auth-app .
 	sudo docker images | grep auth-app
