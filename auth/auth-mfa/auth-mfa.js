@@ -6,6 +6,10 @@ module.exports = function auth(options) {
   var act = Promise.promisify(this.act, {context: this})
 
   this.add({role:"auth",mfa:"auth"}, authenticateAndSetFlags);
+  this.add({role:"auth",verify:"normal"}, verifyNormalLogin);  
+  this.add({role:"auth",login:"email"}, authenticateEmailAndSetFlags);
+  this.add({role:"auth",login:"sms"}, authenticateSMSAndSetFlags);
+  
   this.add({role:"auth",mfa:"check"}, checkFlagsSession);
   this.add({role:"auth",check:"verified"}, checkIfUserVerifiedAuthenticationType);
   
@@ -28,6 +32,71 @@ module.exports = function auth(options) {
     }
   }
 
+
+function authenticateEmailAndSetFlags(msg, respond) {
+    let email = msg.email;
+    let seneca = this;
+    act("entity:user,get:email", {
+        email: email
+      })
+      .then((user) => {
+        if (!user.succes) {
+          return respond({
+            succes: false,
+            message: "User could not been found!"
+          });
+        } else {
+
+          return act("entity:user-mfa,crud:user", {email: msg.email,mail: msg.mail,sms: msg.sms,app: msg.app,normal: msg.normal})
+              .then((userMFASession) => {
+                return act("role:email,cmd:mfa", {uuid: userMFASession.uuid})
+                  .then((response) => {return respond(response);})
+                  .catch((err) => {return respond(err);})
+              })
+            .catch((err) => {
+              return respond(err);
+            })
+        }})
+        .catch((err) => {
+        return respond(err);
+      });
+      
+      
+  }
+
+  function authenticateSMSAndSetFlags(msg, respond) {
+    let seneca = this;
+    act("entity:user,get:phoneNumber", {
+        phoneNumber: msg.phoneNumber
+      })
+      .then((user) => {
+        this.user = user;
+        if (!user.succes) {
+          return respond({
+            succes: false,
+            message: "User could not been found!"
+          });
+        } else {
+          return act("entity:user-mfa,crud:user", {email: this.user.email,mail: msg.mail,sms: msg.sms,app: msg.app,normal: msg.normal})
+              .then((userMFASession) => {
+                this.userMFASession = userMFASession;
+                return act("entity:user-sms,get:user",{email:this.user.email})
+                .then((user)=>{
+                    return act("role:sms,cmd:save,send:false", {email: this.user.email,phoneNumber: msg.phoneNumber,countryCode: user.countryCode,uuid: this.userMFASession.uuid})
+                      .then((response) => {return respond(response);})
+                      .catch((err) => {return respond(err);})
+                })
+                .catch((err) => {return respond(err);})
+              })
+            .catch((err) => {
+              return respond(err);
+            })
+        }})
+        .catch((err) => {
+        return respond(err);
+      });   
+  }
+
   function authenticateAndSetFlags(msg, respond) {
     act("entity:user,get:email", {email: msg.email})
       .then((user) => {
@@ -39,7 +108,7 @@ module.exports = function auth(options) {
                 return act("role:hash,cmd:comparePasswords", {password: msg.password,hash: this.user.password})
                   .then((authenticated) => {
                     if (authenticated.succes) {
-                      return act("entity:user-mfa,crud:user", {email: msg.email,mail: msg.mail,sms: msg.sms,app: msg.app})
+                      return act("entity:user-mfa,crud:user", {email: msg.email,mail: msg.mail,sms: msg.sms,app: msg.app,normal:msg.normal,mfa:msg.mfa})
                         .then((userMFASession) => {
                           console.log(userMFASession);
                           return act("role:auth,mfa:check", {email: msg.email,uuid: userMFASession.uuid})
@@ -66,6 +135,36 @@ module.exports = function auth(options) {
       });
   }
 
+  function verifyNormalLogin(msg, respond) {
+    act("entity:user,get:email", {email: msg.email})
+      .then((user) => {
+        this.user = user;
+        if (user.succes) {
+                return act("role:hash,cmd:comparePasswords", {password: msg.password,hash: this.user.password})
+                  .then((authenticated) => {
+                    if (authenticated.succes) {
+                      return act("entity:user-mfa,change:flags", {normal: 1,uuid: msg.uuid})
+                        .then((userMFASession) => {
+                          console.log(userMFASession);
+                          return act("role:auth,mfa:check", {email: msg.email,uuid: userMFASession.uuid})
+                                .then((data) => {return respond(null, data);})
+                        })
+                        .catch((err) => {
+                          return respond(err, null);
+                        });
+                    } else {
+                      return respond(null, authenticated);
+                    }
+                  })
+                  .catch((err) => {return respond(err);});
+              } else {
+                return respond({succes: false,message: "Username or password is incorrect!"});
+              }
+            })
+            .catch((err) => {return respond(err);})
+  }
+  
+
   function checkFlagsSession(msg, respond) {
     //ROEP HIER DE MICROSERVICE AAN DIE NOG OP 0 STAAT BIJ FLAGS. mAAK HIERNA 1 VAN. 
     // RESPOND IS NIET NODIG OMDAT DE LOSSE MCIROSERVICES ALTIJD DEZE FUNCTIE WEER AAN ROEPEN.
@@ -74,7 +173,7 @@ module.exports = function auth(options) {
         this.user = user;
         if (user.flags.sms == null || user.flags.sms == 0) {
 
-          act("role:sms,cmd:save,send:true", {email: user.email,phoneNumber: msg.phoneNumber,countryCode: msg.countryCode,uuid: user.uuid})
+          act("role:sms,cmd:save,send:false", {email: user.email,phoneNumber: msg.phoneNumber,countryCode: msg.countryCode,uuid: user.uuid})
             .then((response) => {return respond(response);})
             .catch((err) => {return respond(err);})
 
@@ -83,6 +182,10 @@ module.exports = function auth(options) {
           act("role:email,cmd:mfa", {uuid: user.uuid})
             .then((response) => {return respond(response);})
             .catch((err) => {return respond(err);})
+
+        } else if (user.flags.normal == null || user.flags.normal == 0) {
+
+          return respond({succes: true,message: "Standard user + pass session started!",uuid: user.uuid,redirectTo: "verifyNormalPage"})
 
         } else if (user.flags.app == null || user.flags.app == 0) {
 

@@ -5,6 +5,10 @@ const Promise = require("bluebird");
 
 var act = Promise.promisify(this.act, {context: this});
 
+
+ 
+
+
 function verifyEmailCode(msg, respond) {
   let uuid = msg.uuid;
   let code = msg.code;

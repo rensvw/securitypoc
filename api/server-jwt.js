@@ -167,12 +167,16 @@ const loginWithMFA = (request, reply) => {
   let sms = request.payload.sms;
   let mail = request.payload.mail;
   let app = request.payload.app;
+  let mfa = request.payload.mfa;
+  let normal = request.payload.normal;
   server.seneca.act("role:auth,mfa:auth", {
     password: password,
     email: email,
     sms: sms,
     mail: mail,
-    app: app
+    app: app,
+    normal:normal,
+    mfa:mfa
   }, function (err, respond) {
     if (err) {
       return reply("yolo");
@@ -185,6 +189,100 @@ const loginWithMFA = (request, reply) => {
           email: respond.user.email,
           fullName: respond.user.fullName,
           
+          token: createToken(respond.user)
+        });
+      }
+      else{
+        return reply({
+          succes: respond.succes,
+          message: "First step succeeded, lets go to the next one!",
+          redirectTo: respond.redirectTo,
+          uuid: respond.uuid
+        });
+      }
+    } else if (!respond.succes) {
+      return reply(Boom.unauthorized("Username or password is wrong, or you didn't verify the authentication type!"));
+    }
+  });
+};
+
+const loginWithEmail = (request, reply) => {
+  if (request.auth.isAuthenticated) {
+    return reply({
+      message: "you're already authenticated!"
+    });
+  }
+  let email = request.payload.email;
+  let mfa = request.payload.mfa;
+  let sms = request.payload.sms;
+  let mail = request.payload.mail;
+  let app = request.payload.app;
+  let normal = request.payload.normal;
+  server.seneca.act("role:auth,login:email", {
+    email: email,
+    sms: sms,
+    mail: mail,
+    app: app,
+    normal: normal,
+    mfa: mfa
+  }, function (err, respond) {
+    if (err) {
+      return reply("yolo");
+    } else if (respond.succes) {
+      if(respond.returnToken){
+        return reply({
+          succes: respond.succes,
+          message: "Welcome!",
+          redirectTo: 'home',
+          email: respond.user.email,
+          fullName: respond.user.fullName,
+          token: createToken(respond.user)
+        });
+      }
+      else{
+        return reply({
+          succes: respond.succes,
+          message: "First step succeeded, lets go to the next one!",
+          redirectTo: respond.redirectTo,
+          uuid: respond.uuid
+        });
+      }
+    } else if (!respond.succes) {
+      return reply(Boom.unauthorized("Username or password is wrong, or you didn't verify the authentication type!"));
+    }
+  });
+};
+
+const loginWithSMS = (request, reply) => {
+  if (request.auth.isAuthenticated) {
+    return reply({
+      message: "you're already authenticated!"
+    });
+  }
+  let phoneNumber = request.payload.phoneNumber;
+  let mfa = request.payload.mfa;
+  let sms = request.payload.sms;
+  let mail = request.payload.mail;
+  let app = request.payload.app;
+  let normal = request.payload.normal;
+  server.seneca.act("role:auth,login:sms", {
+    phoneNumber: phoneNumber,
+    sms: sms,
+    mail: mail,
+    app: app,
+    normal: normal,
+    mfa: mfa
+  }, function (err, respond) {
+    if (err) {
+      return reply("yolo");
+    } else if (respond.succes) {
+      if(respond.returnToken){
+        return reply({
+          succes: respond.succes,
+          message: "Welcome!",
+          redirectTo: 'home',
+          email: respond.user.email,
+          fullName: respond.user.fullName,
           token: createToken(respond.user)
         });
       }
@@ -460,6 +558,39 @@ const signupVerifySMS = (request, reply) => {
   });
 };
 
+const verifyNormalLogin = (request, reply) => {
+  let uuid = request.payload.uuid;
+  let email = request.payload.email;
+  let password = request.payload.password;
+  
+  server.seneca.act("role:auth,verify:normal", {
+    uuid: uuid,
+    email: email,
+    password: password
+  }, function (err, respond) {
+    if (err) {
+      reply(err);
+    } else if (respond.succes) {
+      if(respond.returnToken){
+        return reply({
+          succes: respond.succes,
+          message: respond.message,
+          fullName: respond.user.fullName,
+          email: respond.user.email,
+          redirectTo: "home",
+          token: createToken(respond.user)
+        });
+      }
+      else{
+        return reply(respond);
+      }
+    } else if (!respond.succes) {
+     reply({succes:respond.succes,
+      message: respond.message})
+    }
+  });
+};
+
 const changePassword = (request, reply) => {
   let oldPassword= request.payload.oldPassword;
   let newPassword1= request.payload.newPassword1;
@@ -587,9 +718,49 @@ const changePassword = (request, reply) => {
             sms: Joi.number().integer().min(0).max(1).default(1),
             mail: Joi.number().integer().min(0).max(1).default(1),
             app: Joi.number().integer().min(0).max(1).default(1),  
+            normal: Joi.number().integer().min(0).max(1).default(1),  
+            mfa: Joi.array()            
           }
         },
         handler: loginWithMFA,
+      }
+    },{
+      method: "POST",
+      path: "/api/login/email",
+      config: {
+        description: "Login route",
+        notes: "Returns true if correctly logged in",
+        tags: ["api"],
+        validate: {
+          payload: {
+            email: Joi.string().email().required(),
+            sms: Joi.number().integer().min(0).max(1).default(1),
+            mail: Joi.number().integer().min(0).max(1).default(1),
+            app: Joi.number().integer().min(0).max(1).default(1),  
+            normal: Joi.number().integer().min(0).max(1).default(1),  
+            mfa: Joi.array()
+          }
+        },
+        handler: loginWithEmail,
+      }
+    },{
+      method: "POST",
+      path: "/api/login/sms",
+      config: {
+        description: "Login route",
+        notes: "Returns true if correctly logged in",
+        tags: ["api"],
+        validate: {
+          payload: {
+            phoneNumber: Joi.string().required(),
+            sms: Joi.number().integer().min(0).max(1).default(1),
+            mail: Joi.number().integer().min(0).max(1).default(1),
+            app: Joi.number().integer().min(0).max(1).default(1),  
+            normal: Joi.number().integer().min(0).max(1).default(1),  
+            mfa: Joi.array()
+          }
+        },
+        handler: loginWithSMS,
       }
     }, {
       method: "POST",
@@ -605,6 +776,23 @@ const changePassword = (request, reply) => {
           }
         },
         handler: verifySMSCodeAndLogin,
+        
+      }
+    },{
+      method: "POST",
+      path: "/api/verify/normal",
+      config: {
+        description: "Verify your sms code when logging in",
+        notes: "Returns a cookie session if authorised",
+        tags: ["api"],
+        validate: {
+          payload: {
+            uuid: Joi.string().required(),
+            email: Joi.string().email().required(),
+            password: Joi.string().min(2).max(200).required(),
+          }
+        },
+        handler: verifyNormalLogin,
         
       }
     }, 

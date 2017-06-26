@@ -15,7 +15,7 @@ function authenticateAndSendSMSCode(msg, respond) {
         return act("role:hash,cmd:comparePasswords", {password: password,hash: user.password})
           .then((authenticated) => {
             if (authenticated.succes) {
-              return act("role:sms,cmd:save,send:true", {email: email})
+              return act("role:sms,cmd:save,send:false", {email: email})
                 .then((result) => {
                   return respond({succes: true,uuid: result.uuid,message: "Username and password are correct, we've send you a code in a text message!"});})
                 .catch((err) => {return respond(err);});
@@ -53,10 +53,14 @@ function signupAndSendSMS(msg, respond) {
         return act("role:hash,cmd:comparePasswords", {password: password,hash: user.password})
           .then((authenticated) => {
             if (authenticated.succes) {
-              return act("entity:user-mfa,crud:user", {email: msg.email,mail: 1,sms: 0,app: 1})
+
+                return act("entity:user-mfa,crud:user", {email: msg.email,mail: 1,sms: 0,app: 1,normal:1})
                 .then((user) => {
                   if (user.succes) {
-                    return act("role:sms,cmd:save,send:true", {email: email,uuid: user.uuid,phoneNumber: phoneNumber,countryCode: countryCode})
+                  act("entity:user,crud:phone", {email: msg.email,phoneNumber:phoneNumber})
+             
+            
+                    return act("role:sms,cmd:save,send:false", {email: email,uuid: user.uuid,phoneNumber: phoneNumber,countryCode: countryCode})
                       .then((result) => {return respond(null,result);})
                       .catch((err) => {return respond(err,null);})
                   } else {
@@ -64,6 +68,7 @@ function signupAndSendSMS(msg, respond) {
                   }
                 })
                 .catch((err) => {return respond(err,null);})
+             
             } else {
               return respond({succes:false,message: "Password is not correct!"})
             }

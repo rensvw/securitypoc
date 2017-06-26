@@ -17,14 +17,13 @@
         <div *ngIf="loginForm.controls['password'].hasError('minlength') && loginForm.controls['password'].touched" class="alert alert-danger">The password needs to be at least 8 chracters long!</div>
     </div>
 
+      <button type="button" class="btn btn-primary" (click)="goBack()">Back</button>
 
-        <button type="submit" [disabled]="loginForm.invalid" class="btn btn-primary pull-right">Login</button>
+        <button type="submit" [disabled]="loginForm.invalid" class="btn btn-primary pull-right">Next</button>
 
       </form>
-<ss-multiselect-dropdown name="multiselect" [options]="myOptions" [texts]="myTexts" [settings]="mySettings" [(ngModel)]="optionsModel" class="dropdownselect" (ngModelChange)="onChange($event)"></ss-multiselect-dropdown>
       
 
   </div>
-   <div style="align-self: center"><a [routerLink]="['/signup']" class="signuptext" routerLinkActive="active">Don't have an account yet? Click here to register!</a></div>
 
 </div>

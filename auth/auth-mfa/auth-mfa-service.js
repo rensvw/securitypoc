@@ -10,7 +10,10 @@ require("seneca")({tag: "auth-mfa-service"})
       { 
       pins: [
       "role:auth,mfa:auth", 
-      "role:auth,mfa:check",
+      "role:auth,mfa:check",      
+      "role:auth,login:email",
+      "role:auth,verify:normal",
+      "role:auth,login:sms"
       ]
     }],
     bases: BASES,

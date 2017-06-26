@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from './../auth.service';
-import { Router } from '@angular/router';
+import { Router, Params, ActivatedRoute} from '@angular/router';
 import { ICredentials } from './../credentials';
 import { IMultiSelectOption, IMultiSelectTexts, IMultiSelectSettings } from 'angular-2-dropdown-multiselect';
 import {FormGroup, FormControl, Validators, FormBuilder, AbstractControl } from '@angular/forms';
@@ -14,7 +14,7 @@ import { CustomValidators } from 'ng2-validation';
 export class LoginComponent implements OnInit {
 
   pageTitle: string = "Login Page";
-  credentials: ICredentials;
+  credentials;
   email: string;
   password: string;
   optionsModel: number[]
@@ -23,79 +23,60 @@ export class LoginComponent implements OnInit {
   mySettings: IMultiSelectSettings
   loginForm;
   showSpinner;
+  mfa;
 
-  constructor(private _authService: AuthService, private _router: Router, private _formBuilder: FormBuilder) { }
+  constructor(private _authService: AuthService, private _router: Router, private _formBuilder: FormBuilder, private route: ActivatedRoute) { }
 
   ngOnInit() {
 
     let email = new FormControl('', [Validators.required,CustomValidators.email]);
     let password = new FormControl('', [Validators.required, Validators.minLength(8)]);
     
+     this.route
+      .queryParams
+      .subscribe((params: Params) => {
+        this.mfa = params['mfa'];   
+        this.mfa.splice(0,1); 
+        console.log(this.mfa)
+    });
  
     this.loginForm = new FormGroup({
       email: email,
       password: password,
     });
 
-    this.optionsModel = [2];
-    this.mySettings = {
-    enableSearch: true,
-    checkedStyle: 'fontawesome',
-    buttonClasses: 'btn btn-default btn-block',
-    dynamicTitleMaxItems: 3,
-    displayAllSelectedText: true
-};
-
-    this.myTexts = {
-    checkAll: 'Select all',
-    uncheckAll: 'Unselect all',
-    checked: 'item selected',
-    checkedPlural: 'items selected',
-    searchPlaceholder: 'Find',
-    defaultTitle: 'Select',
-    allSelected: 'All selected',
-};
-        this.myOptions = [
-    { id: 1, name: 'Multifactor authentication methods', isLabel: true },
-    { id: 2, name: 'Normal Authentication', parentId: 1 },
-    { id: 3, name: 'Email Authentication', parentId: 1 },
-    { id: 4, name: 'Sms Authentication', parentId: 1 },
-    { id: 5, name: 'Authenticator App', parentId: 1 },
-];
- console.log(this.optionsModel);
+ 
   }
 
   
-  onChange(event) {
-        console.log(this.optionsModel);
+   goBack(): void {
+        this._router.navigate(['choose-mfa']);
     }
+
     
   authenticate(formValues){
-    this.credentials = {
+     this.credentials = {
       email: formValues.email,
       password: formValues.password,
       sms: 1,
       mail: 1,
-      app: 1
+      app: 1,
+      normal: 1,
+      mfa: this.mfa
     }
-    let loginOptions = this.optionsModel;
-    if(loginOptions.length === 1 && loginOptions[0] === 2){
-      this._authService.authenticate(this.credentials);
-    }
-    else{
-      console.log(loginOptions)
-        if(loginOptions.includes(3)){
+        if(this.mfa.includes('3')){
           this.credentials.mail = 0;
         }
-        if(loginOptions.includes(4)){
+        if(this.mfa.includes('4')){
           this.credentials.sms = 0;
         }
-        if(loginOptions.includes(5)){
+        if(this.mfa.includes('5')){
           this.credentials.app = 0;
         }
+    
        this._authService.authenticate(this.credentials);   
        console.log(this.credentials)  
-      }
+      
     }
   };
 

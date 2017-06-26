@@ -21,7 +21,11 @@ seneca
       "entity:user,get:uuid",
       "entity:user,get:email",
       "entity:user,get:verified",
+      "entity:user,get:phoneNumber",
       "entity:user,change:password",
+      "entity:user,create:phone",
+      "entity:user,update:phone",
+      "entity:user,crud:phone",
       "entity:user","update:flags"]
     }],
     host:HOST,

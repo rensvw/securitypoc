@@ -11,7 +11,7 @@ require("seneca")({tag: "auth-email-service"})
       pins: [
       "role:auth,email:verify",
       "role:auth,signup:email",
-      "role:auth,signup:verify-email"
+      "role:auth,signup:verify-email",
       ]
     }],
     bases: BASES,

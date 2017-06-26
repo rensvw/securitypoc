@@ -41,7 +41,7 @@ export class SignupComponent implements OnInit {
    }
 
    goBack(): void {
-        this._router.navigate(['login']);
+        this._router.navigate(['choose-mfa']);
     }
 
 

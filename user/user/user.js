@@ -2,12 +2,20 @@ module.exports = function user( options ) {
 
 this.add({"entity":"user","get":"uuid"}, getUserByUuid);
 this.add({"entity":"user","get":"email"}, getUser);
+this.add({"entity":"user","get":"phoneNumber"}, getUserByPhoneNumber);
 this.add({"entity":"user","get":"verified"}, checkIfUserIsVerified);
 
 this.add({"entity":"user","create":"new"}, createUserWhileCheckingForExistingUser);
 this.add({"entity":"user","update":"flags"}, updateVerifiedFlags);
 this.add({"entity":"user","change":"password"}, changePassword);
 
+ this.add({entity:"user",create:"phone"}, createNewPhoneNumber);
+  this.add({entity:"user",update:"phone"}, updatePhoneNumber);
+  this.add({"entity":"user","crud":"phone"}, updateOrCreateNewPhoneNumber);
+  
+
+ const Promise = require("bluebird");
+  var act = Promise.promisify(this.act, {context: this});
 
 const moment = require("moment");
 const uuidV4 = require("uuid/v4");
@@ -53,6 +61,32 @@ function getUser(msg, respond) {
         succes: true,
         email: user.email,
         password: user.password,
+        verified: user.verified,
+        fullName: user.fullName,
+      });
+    }
+  });
+}
+
+function getUserByPhoneNumber(msg, respond) {
+  var user = this.make$("user");
+  var email = msg.email;
+  user.load$({ phoneNumber: msg.phoneNumber }, function (err, user) {
+    if (err) {
+      respond(err, null);
+    }
+    if (!user) {
+      respond({
+        succes: false,
+        message: "User could not be found!"
+      });
+    }
+    if (user) {
+      respond(err, {
+        succes: true,
+        email: user.email,
+        password: user.password,
+        phoneNumber: user.phoneNumber,
         verified: user.verified,
         fullName: user.fullName,
       });
@@ -145,6 +179,65 @@ function createUserWhileCheckingForExistingUser(msg, respond) {
     }
   });
 }
+
+  function createNewPhoneNumber(msg, respond) {
+    var user = this.make$("user");
+    user.phoneNumber = msg.phoneNumber
+    user.save$(function (err, user) {
+      if (err) {
+        respond(err, null);
+      } else {
+        respond(null, this.util.clean(user), respond(err, {
+              succes: true,
+              message: "Phone number added!",
+              email: user.email,
+              fullName: user.fullName
+            }));
+      }
+    });
+  }
+
+  function updatePhoneNumber(msg, respond) {
+    var user = this.make$("user");
+        user.load$({
+          email: msg.email
+        }, function (err, result) {
+          if (!result) {
+            respond({succes: false,message: "User could not be found!"});
+          }
+          result.data$({
+            phoneNumber: msg.phoneNumber,
+          });
+          result.save$(function (err, user) {
+            respond(err, {
+              succes: true,
+              message: "Succesfully changed the phone number!",
+              email: user.email,
+              fullName: user.fullName              
+            })
+          });
+
+        })
+  }
+  
+
+  function updateOrCreateNewPhoneNumber(msg, respond) {
+    act("entity:user,get:email", {
+        email: msg.email,
+      })
+      .then((user) => {
+        if (user.succes) {
+          return act("entity:user,update:phone", {email: msg.email,phoneNumber:msg.phoneNumber})
+            .then((data) => {return respond(null, data);})
+            .catch((err) => {return respond(err, null)})
+        } else if (!user.succes) {
+          return act("entity:user,create:phone", {email: msg.email,phoneNumber:msg.phoneNumber})
+            .then((data) => {return respond(null, data);})
+            .catch((err) => {return respond(err, null)})
+        }
+      })
+      .catch((err) => {respond(err, null);});
+  }
 
  function updateVerifiedFlags(msg, respond) {
     var user = this.make('user');

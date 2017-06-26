@@ -107,8 +107,11 @@ module.exports = function flag( options ) {
             flags: {
               sms: msg.sms,
               mail: msg.mail,
-              app: msg.app
+              app: msg.app,
+              normal: msg.normal,
+              
             },
+            mfa: msg.mfa,
             sessionStarted: moment().format("LLL")
           });
           result.save$(function (err, user) {
@@ -149,12 +152,17 @@ module.exports = function flag( options ) {
           if (msg.app == undefined){
             var app = result.flags.app;
           } 
+          if (msg.normal == undefined){
+            var normal = result.flags.normal;
+          } 
           result.data$({
             flags: {
               sms: sms || msg.sms,
               mail: mail || msg.mail,
-              app: app || msg.app
-            }
+              app: app || msg.app,
+              normal: normal || msg.normal
+            },
+            mfa: msg.mfa
           });
           result.save$(function (err, user) {
             respond(err, {
@@ -177,7 +185,9 @@ module.exports = function flag( options ) {
               email: msg.email,
               sms: msg.sms,
               mail: msg.mail,
-              app: msg.app
+              app: msg.app,
+              normal: msg.normal,
+              mfa: msg.mfa
             })
             .then((data) => {
               return respond(null, data);
@@ -190,7 +200,9 @@ module.exports = function flag( options ) {
               email: msg.email,
               sms: msg.sms,
               mail: msg.mail,
-              app: msg.app
+              app: msg.app,
+              normal: msg.normal,
+              mfa: msg.mfa
             })
             .then((data) => {
               return respond(null, data);

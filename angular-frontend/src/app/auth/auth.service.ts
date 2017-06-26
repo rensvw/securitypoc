@@ -15,6 +15,9 @@ export class AuthService {
 
     currentUser: any;
     private _authenticateUrl = '/api/login';
+    private _authenticateEmailUrl = 'api/login/email'
+    private _authenticateSMSUrl = 'api/login/sms'
+
     private _signupUrlEmail = '/api/signup/email';
     private _signupUrlSMS = '/api/signup/sms';
 
@@ -24,6 +27,7 @@ export class AuthService {
     private _verifySMSUrl = '/api/verify/sms';
     private _verifyEmailUrl = '/api/verify/email';
     private _verifyAppUrl = '/api/verify/app';   
+    private _verifyNormalUrl = '/api/verify/normal'
     private _verifySignupSMSUrl = '/api/signup/verify/sms';
     private _verifySignupEmailUrl = '/api/signup/verify/email';
     private _verifySignupAppUrl = '/api/signup/verify/app';
@@ -38,6 +42,7 @@ export class AuthService {
     private key;
     private error;
     private message;
+    private mfa;
 
     constructor(private _http: Http, private _router: Router) { }
 
@@ -66,6 +71,8 @@ export class AuthService {
                 
             )
     }
+
+
 
      createUserEmail(user) {
          return this._http.post(this._signupUrlEmail, user) // ...using post request
@@ -160,7 +167,50 @@ export class AuthService {
      }
 
 
-
+     chooseMfa(options){
+        for(let x=0; x<options.length;x++){
+            if(options[x]==1){
+                // Dont run this one
+                this._router.navigate(['login'], {
+                                 queryParams: {
+                                     mfa: options
+                                 }
+                             });
+                break;
+            }
+            else if(options[x]==2){
+                // user pass
+                // starts wit huser passs and then proceed with the next
+                this._router.navigate(['login'], {
+                                 queryParams: {
+                                     mfa: options
+                                 }
+                             });
+                break;
+            }
+            else if(options[x]==3){
+                // email
+                this._router.navigate(['login/email'], {
+                                 queryParams: {
+                                     mfa: options
+                                 }
+                             });
+                break;
+            }
+            else if(options[x]==4){
+                //sms
+                this._router.navigate(['login/sms'], {
+                                 queryParams: {
+                                     mfa: options
+                                 }
+                             });
+                break;
+            }
+            else if(options[x]==5){
+                // app
+            }
+        }
+     }
 
      authenticate(credentials) {
          const headers = new Headers({
@@ -224,6 +274,98 @@ export class AuthService {
              );
      }
 
+     authenticateEmail(credentials) {
+         const headers = new Headers({
+             'Content-Type': 'application/json'
+         }); // ... Set content type to JSON
+         const options = new RequestOptions({
+             headers: headers
+         }); // Create a request option
+         console.log(credentials)
+         return this._http.post(this._authenticateEmailUrl, credentials)
+             .map(res => res.json())
+             .subscribe(
+                 data => {
+                     this.redirectTo = data.redirectTo;
+                     this.uuid = data.uuid;
+                     this.mfa = data.mfa;
+                     if(!data.succes){
+                         alert("This email address could not been found!");
+                     }
+                     console.log(data)
+                     if (data.token) {
+                         localStorage.setItem('token', data.token);
+                         localStorage.setItem('email', data.email);
+                         localStorage.setItem('name', data.fullName);                         
+                     }
+                 },
+                 error => {
+                     console.log(error)
+                     alert("Tis email address doesn't exist!")
+                 },
+                 () => {
+                     switch (this.redirectTo) {
+                         case "verifyEmailPage":
+                             this._router.navigate(['verify/email'], {
+                                 queryParams: {
+                                     uuid: this.uuid,
+                                     verify: "email",
+                                     mfa: this.mfa
+                                 }
+                             });
+                             break;
+                     }
+                 }
+             );
+     }
+
+      authenticateSMS(credentials) {
+         const headers = new Headers({
+             'Content-Type': 'application/json'
+         }); // ... Set content type to JSON
+         const options = new RequestOptions({
+             headers: headers
+         }); // Create a request option
+         console.log(credentials)
+         return this._http.post(this._authenticateSMSUrl, credentials)
+             .map(res => res.json())
+             .subscribe(
+                 data => {
+                     this.redirectTo = data.redirectTo;
+                     this.uuid = data.uuid;
+                     this.mfa = data.mfa;
+                     if(!data.succes){
+                         alert("This phone number could not been found!");
+                     }
+                     console.log(data)
+                     if (data.token) {
+                         localStorage.setItem('token', data.token);
+                         localStorage.setItem('email', data.email);
+                         localStorage.setItem('name', data.fullName);                         
+                     }
+                 },
+                 error => {
+                     console.log(error)
+                     alert("This phone number doesn't exist!")
+                 },
+                 () => {
+                     switch (this.redirectTo) {
+                         case "verifySMSPage":
+                             this._router.navigate(['verify/sms'], {
+                                 queryParams: {
+                                     uuid: this.uuid,
+                                     verify: "sms",
+                                     mfa: this.mfa
+                                 }
+                             });
+                             break;
+                     }
+                 }
+             );
+     }
+
+
+
      verify(credentials) {
          const headers = new Headers({
              'Content-Type': 'application/json'
@@ -242,11 +384,16 @@ export class AuthService {
              case "app":
                  this.url = this._verifyAppUrl;
                  break;
+             case "normal":
+                 this.url = this._verifyNormalUrl;
+                 break;
          }
 
          return this._http.post(this.url, {
                  code: credentials.code,
-                 uuid: credentials.uuid
+                 uuid: credentials.uuid,
+                 email: credentials.email || undefined,
+                 password: credentials.password || undefined
              })
              .map(res => res.json())
              .subscribe(
@@ -297,6 +444,14 @@ export class AuthService {
                                  queryParams: {
                                      uuid: this.uuid,
                                      verify: "app"
+                                 }
+                             });
+                             break;
+                          case "verifyNormalPage":
+                             this._router.navigate(['verify/normal'], {
+                                 queryParams: {
+                                     uuid: this.uuid,
+                                     verify: "normal"
                                  }
                              });
                              break;

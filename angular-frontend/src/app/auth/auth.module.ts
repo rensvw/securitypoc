@@ -21,6 +21,10 @@ import { ChangePasswordComponent } from './settings/change-password/change-passw
 import { VerifySmsComponent } from './verify/verify-sms/verify-sms.component';
 import { VerifyEmailComponent } from './verify/verify-email/verify-email.component';
 import { VerifyAppComponent } from './verify/verify-app/verify-app.component';
+import { ChooseMfaComponent } from './choose-mfa/choose-mfa.component';
+import { LoginEmailComponent } from './login/login-email/login-email.component';
+import { VerifyNormalComponent } from './verify/verify-normal/verify-normal.component';
+import { LoginSmsComponent } from './login/login-sms/login-sms.component';
 
 export function authHttpServiceFactory(http: Http, options: RequestOptions) {
   return new AuthHttp(new AuthConfig({tokenName: 'token',
@@ -45,7 +49,7 @@ export function authHttpServiceFactory(http: Http, options: RequestOptions) {
         MultiselectDropdownModule,
         QRCodeModule],
     exports: [],
-    declarations: [LoginComponent, ProfileComponent, SignupComponent, SignupSmsComponent, SignupAppComponent, SignupVerifyAppComponent,SignupVerifyEmailComponent,SignupVerifySmsComponent, ChangePasswordComponent, VerifySmsComponent, VerifyEmailComponent, VerifyAppComponent]
+    declarations: [LoginComponent, ProfileComponent, SignupComponent, SignupSmsComponent, SignupAppComponent, SignupVerifyAppComponent,SignupVerifyEmailComponent,SignupVerifySmsComponent, ChangePasswordComponent, VerifySmsComponent, VerifyEmailComponent, VerifyAppComponent, ChooseMfaComponent, LoginEmailComponent, VerifyNormalComponent, LoginSmsComponent]
 })
 
 export class AuthModule {

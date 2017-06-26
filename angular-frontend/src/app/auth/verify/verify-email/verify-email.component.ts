@@ -51,7 +51,7 @@ export class VerifyEmailComponent implements OnInit {
   }
 
   goBack(): void {
-        this.router.navigate(['login']);
+        this.router.navigate(['choose-mfa']);
     }
 
    verify(formValues){
