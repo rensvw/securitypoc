@@ -300,6 +300,53 @@ const loginWithSMS = (request, reply) => {
   });
 };
 
+const loginWithApp = (request, reply) => {
+  if (request.auth.isAuthenticated) {
+    return reply({
+      message: "you're already authenticated!"
+    });
+  }
+  let email = request.payload.email;
+  let mfa = request.payload.mfa;
+  let sms = request.payload.sms;
+  let mail = request.payload.mail;
+  let app = request.payload.app;
+  let normal = request.payload.normal;
+  server.seneca.act("role:auth,login:app", {
+    email: email,
+    sms: sms,
+    mail: mail,
+    app: app,
+    normal: normal,
+    mfa: mfa
+  }, function (err, respond) {
+    if (err) {
+      return reply("yolo");
+    } else if (respond.succes) {
+      if(respond.returnToken){
+        return reply({
+          succes: respond.succes,
+          message: "Welcome!",
+          redirectTo: 'home',
+          email: respond.user.email,
+          fullName: respond.user.fullName,
+          token: createToken(respond.user)
+        });
+      }
+      else{
+        return reply({
+          succes: respond.succes,
+          message: "First step succeeded, lets go to the next one!",
+          redirectTo: respond.redirectTo,
+          uuid: respond.uuid
+        });
+      }
+    } else if (!respond.succes) {
+      return reply(Boom.unauthorized("Username or password is wrong, or you didn't verify the authentication type!"));
+    }
+  });
+};
+
 
 const verifySMSCodeAndLogin = (request, reply) => {
   if (request.auth.isAuthenticated) {
@@ -742,6 +789,25 @@ const changePassword = (request, reply) => {
           }
         },
         handler: loginWithEmail,
+      }
+    },{
+      method: "POST",
+      path: "/api/login/app",
+      config: {
+        description: "Login route",
+        notes: "Returns true if correctly logged in",
+        tags: ["api"],
+        validate: {
+          payload: {
+            email: Joi.string().email().required(),
+            sms: Joi.number().integer().min(0).max(1).default(1),
+            mail: Joi.number().integer().min(0).max(1).default(1),
+            app: Joi.number().integer().min(0).max(1).default(1),  
+            normal: Joi.number().integer().min(0).max(1).default(1),  
+            mfa: Joi.array()
+          }
+        },
+        handler: loginWithApp,
       }
     },{
       method: "POST",

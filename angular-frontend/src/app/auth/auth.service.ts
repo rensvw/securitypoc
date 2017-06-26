@@ -17,6 +17,7 @@ export class AuthService {
     private _authenticateUrl = '/api/login';
     private _authenticateEmailUrl = 'api/login/email'
     private _authenticateSMSUrl = 'api/login/sms'
+    private _authenticateAppUrl = 'api/login/app'
 
     private _signupUrlEmail = '/api/signup/email';
     private _signupUrlSMS = '/api/signup/sms';
@@ -208,6 +209,12 @@ export class AuthService {
             }
             else if(options[x]==5){
                 // app
+                this._router.navigate(['login/app'], {
+                                 queryParams: {
+                                     mfa: options
+                                 }
+                             });
+                break;
             }
         }
      }
@@ -355,6 +362,52 @@ export class AuthService {
                                  queryParams: {
                                      uuid: this.uuid,
                                      verify: "sms",
+                                     mfa: this.mfa
+                                 }
+                             });
+                             break;
+                     }
+                 }
+             );
+     }
+
+     authenticateApp(credentials) {
+         const headers = new Headers({
+             'Content-Type': 'application/json'
+         }); // ... Set content type to JSON
+         const options = new RequestOptions({
+             headers: headers
+         }); // Create a request option
+         console.log(credentials)
+         return this._http.post(this._authenticateAppUrl, credentials)
+             .map(res => res.json())
+             .subscribe(
+                 data => {
+                     console.log("DATAAAAAAAAAAAAAAAAA:",data)
+                     this.redirectTo = data.redirectTo;
+                     this.uuid = data.uuid;
+                     this.mfa = data.mfa;
+                     if(!data.succes){
+                         alert("This email address could not been found!");
+                     }
+                     console.log(data)
+                     if (data.token) {
+                         localStorage.setItem('token', data.token);
+                         localStorage.setItem('email', data.email);
+                         localStorage.setItem('name', data.fullName);                         
+                     }
+                 },
+                 error => {
+                     console.log(error)
+                     alert("This email address doesn't exist!")
+                 },
+                 () => {
+                     switch (this.redirectTo) {
+                         case "verifyAppPage":
+                             this._router.navigate(['verify/app'], {
+                                 queryParams: {
+                                     uuid: this.uuid,
+                                     verify: "app",
                                      mfa: this.mfa
                                  }
                              });

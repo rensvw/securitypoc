@@ -9,6 +9,7 @@ module.exports = function auth(options) {
   this.add({role:"auth",verify:"normal"}, verifyNormalLogin);  
   this.add({role:"auth",login:"email"}, authenticateEmailAndSetFlags);
   this.add({role:"auth",login:"sms"}, authenticateSMSAndSetFlags);
+  this.add({role:"auth",login:"app"}, authenticateAppAndSetFlags);
   
   this.add({role:"auth",mfa:"check"}, checkFlagsSession);
   this.add({role:"auth",check:"verified"}, checkIfUserVerifiedAuthenticationType);
@@ -87,6 +88,32 @@ function authenticateEmailAndSetFlags(msg, respond) {
                       .catch((err) => {return respond(err);})
                 })
                 .catch((err) => {return respond(err);})
+              })
+            .catch((err) => {
+              return respond(err);
+            })
+        }})
+        .catch((err) => {
+        return respond(err);
+      });   
+  }
+
+  function authenticateAppAndSetFlags(msg, respond) {
+    let seneca = this;
+    act("entity:user,get:email", {
+        email: msg.email
+      })
+      .then((user) => {
+        this.user = user;
+        if (!user.succes) {
+          return respond({
+            succes: false,
+            message: "User could not been found!"
+          });
+        } else {
+          return act("entity:user-mfa,crud:user", {email: this.user.email,mail: msg.mail,sms: msg.sms,app: msg.app,normal: msg.normal})
+              .then((userMFASession) => {
+                return respond({succes: true,message: "Authenticator app session started!",uuid: userMFASession.uuid,redirectTo: "verifyAppPage"});
               })
             .catch((err) => {
               return respond(err);
