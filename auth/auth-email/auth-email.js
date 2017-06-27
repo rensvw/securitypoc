@@ -55,7 +55,7 @@ function signupAndSendMail(msg, respond) {
     })
     .then((user) => {
       if (user.succes) {
-        return act("entity:user-mfa,crud:user", {email: msg.email,mail: 0,sms: 1,app: 1})
+        return act("entity:user-mfa,crud:user", {email: msg.email,mail: 0,sms: 1,app: 1,normal:1,telegram:1})
           .then((userSession) => {return act("role:email,cmd:mfa", {uuid: userSession.uuid})})
           .then((response) => {return respond(response);})
       } else {

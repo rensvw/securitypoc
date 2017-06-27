@@ -79,6 +79,19 @@ module.exports = {
     }
 
   },{
+    name        : "auth-telegram",
+    script      : "./auth/auth-telegram/auth-telegram-service.js",
+    watch       : "./auth/auth-telegram",
+    instances : instances,
+    exec_mode : "cluster",
+    env: {
+      "NODE_ENV": "development",
+    },
+    env_production : {
+       "NODE_ENV": "production"
+    }
+
+  },{
     name        : "auth-email",
     script      : "./auth/auth-email/auth-email-service.js",
     watch       : "./auth/auth-email",
@@ -136,6 +149,19 @@ module.exports = {
     name        : "user-app",
     script      : "./user/user-app/user-app-service-redis.js",
     watch       : "./user/user-app",
+    instances : instances,
+    exec_mode : "cluster",
+    env: {
+      "NODE_ENV": "development",
+      
+    },
+    env_production : {
+       "NODE_ENV": "production"
+    }
+  },{
+    name        : "user-telegram",
+    script      : "./user/user-telegram/user-telegram-service.js",
+    watch       : "./user/user-telegram",
     instances : instances,
     exec_mode : "cluster",
     env: {

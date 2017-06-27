@@ -54,7 +54,7 @@ function signupAndSendSMS(msg, respond) {
           .then((authenticated) => {
             if (authenticated.succes) {
 
-                return act("entity:user-mfa,crud:user", {email: msg.email,mail: 1,sms: 0,app: 1,normal:1})
+                return act("entity:user-mfa,crud:user", {email: msg.email,mail: 1,sms: 0,app: 1,normal:1,telegram:1})
                 .then((user) => {
                   if (user.succes) {
                   act("entity:user,crud:phone", {email: msg.email,phoneNumber:phoneNumber})

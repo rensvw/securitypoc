@@ -48,7 +48,7 @@ function authenticateEmailAndSetFlags(msg, respond) {
           });
         } else {
 
-          return act("entity:user-mfa,crud:user", {email: msg.email,mail: msg.mail,sms: msg.sms,app: msg.app,normal: msg.normal})
+          return act("entity:user-mfa,crud:user", {email: msg.email,mail: msg.mail,sms: msg.sms,app: msg.app,normal: msg.normal,telegram: msg.telegram})
               .then((userMFASession) => {
                 return act("role:email,cmd:mfa", {uuid: userMFASession.uuid})
                   .then((response) => {return respond(response);})
@@ -78,7 +78,7 @@ function authenticateEmailAndSetFlags(msg, respond) {
             message: "User could not been found!"
           });
         } else {
-          return act("entity:user-mfa,crud:user", {email: this.user.email,mail: msg.mail,sms: msg.sms,app: msg.app,normal: msg.normal})
+          return act("entity:user-mfa,crud:user", {email: this.user.email,mail: msg.mail,sms: msg.sms,app: msg.app,normal: msg.normal,telegram: msg.telegram})
               .then((userMFASession) => {
                 this.userMFASession = userMFASession;
                 return act("entity:user-sms,get:user",{email:this.user.email})
@@ -111,7 +111,7 @@ function authenticateEmailAndSetFlags(msg, respond) {
             message: "User could not been found!"
           });
         } else {
-          return act("entity:user-mfa,crud:user", {email: this.user.email,mail: msg.mail,sms: msg.sms,app: msg.app,normal: msg.normal})
+          return act("entity:user-mfa,crud:user", {email: this.user.email,mail: msg.mail,sms: msg.sms,app: msg.app,normal: msg.normal,telegram: msg.telegram})
               .then((userMFASession) => {
                 return respond({succes: true,message: "Authenticator app session started!",uuid: userMFASession.uuid,redirectTo: "verifyAppPage"});
               })
@@ -135,7 +135,7 @@ function authenticateEmailAndSetFlags(msg, respond) {
                 return act("role:hash,cmd:comparePasswords", {password: msg.password,hash: this.user.password})
                   .then((authenticated) => {
                     if (authenticated.succes) {
-                      return act("entity:user-mfa,crud:user", {email: msg.email,mail: msg.mail,sms: msg.sms,app: msg.app,normal:msg.normal,mfa:msg.mfa})
+                      return act("entity:user-mfa,crud:user", {email: msg.email,mail: msg.mail,sms: msg.sms,app: msg.app,normal:msg.normal,mfa:msg.mfa,telegram: msg.telegram})
                         .then((userMFASession) => {
                           console.log(userMFASession);
                           return act("role:auth,mfa:check", {email: msg.email,uuid: userMFASession.uuid})

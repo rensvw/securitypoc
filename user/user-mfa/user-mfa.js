@@ -74,7 +74,10 @@ module.exports = function flag( options ) {
         userMfa.flags = {
           sms: msg.sms,
           mail: msg.mail,
-          app: msg.app
+          telegram: msg.telegram,
+          app: msg.app,
+          normal: msg.normal
+          
         };
         userMfa.save$(function (err, userMfa) {
           if (err) {
@@ -109,7 +112,7 @@ module.exports = function flag( options ) {
               mail: msg.mail,
               app: msg.app,
               normal: msg.normal,
-              
+              telegram: msg.telegram
             },
             mfa: msg.mfa,
             sessionStarted: moment().format("LLL")
@@ -160,7 +163,8 @@ module.exports = function flag( options ) {
               sms: sms || msg.sms,
               mail: mail || msg.mail,
               app: app || msg.app,
-              normal: normal || msg.normal
+              telegram: telegram || msg.telegram,
+              normal: normal || msg.normal,
             },
             mfa: msg.mfa
           });
@@ -187,7 +191,9 @@ module.exports = function flag( options ) {
               mail: msg.mail,
               app: msg.app,
               normal: msg.normal,
-              mfa: msg.mfa
+              mfa: msg.mfa,
+              telegram: msg.telegram
+              
             })
             .then((data) => {
               return respond(null, data);
@@ -202,7 +208,9 @@ module.exports = function flag( options ) {
               mail: msg.mail,
               app: msg.app,
               normal: msg.normal,
-              mfa: msg.mfa
+              mfa: msg.mfa,
+              telegram: msg.telegram
+              
             })
             .then((data) => {
               return respond(null, data);
