@@ -6,27 +6,6 @@ module.exports = function auth(options) {
 
   var act = Promise.promisify(this.act, {context: this});
 
-  function signup(msg, respond) {
-    let email = msg.email;
-    let fullName = msg.fullName;
-    let password = msg.password;
-    act("role:hash,cmd:newHash", { password: password })
-    .then((hash) => {
-      return act("entity:user,create:new", {
-        email: email,
-        fullName: fullName,
-        password: hash.password,
-      });
-    })
-    .then((user) => {
-      respond(user);
-    })
-    .catch((err) => {
-      respond(err);
-    })
-      
-  }
-
   function changePassword(msg,respond){
     let oldPassword = msg.oldPassword
     if(msg.newPassword1 != msg.newPassword2){
@@ -62,6 +41,44 @@ module.exports = function auth(options) {
       })
       .catch((err)=>respond(err,null))
 }
+
+function authenticateAndSetFlags(msg, respond) {
+    act("entity:user,get:email", {email: msg.email})
+      .then((user) => {
+        this.user = user;
+        if (user.succes) {
+          return act("role:auth,check:verified", {user: user,app: msg.app,sms: msg.sms,mail: msg.mail})
+            .then((message) => {
+              if (message.succes) {
+                return act("role:hash,cmd:comparePasswords", {password: msg.password,hash: this.user.password})
+                  .then((authenticated) => {
+                    if (authenticated.succes) {
+                      return act("entity:user-mfa,crud:user", {email: msg.email,mail: msg.mail,sms: msg.sms,app: msg.app,normal:msg.normal,mfa:msg.mfa,telegram: msg.telegram})
+                        .then((userMFASession) => {
+                          console.log(userMFASession);
+                          return act("role:auth,mfa:check", {email: msg.email,uuid: userMFASession.uuid})
+                                .then((data) => {return respond(null, data);})
+                        })
+                        .catch((err) => {
+                          return respond(err, null);
+                        });
+                    } else {
+                      return respond(null, authenticated);
+                    }
+                  })
+                  .catch((err) => {return respond(err);});
+              } else {
+                return respond({succes: false,message: "Username or password is incorrect!"});
+              }
+            })
+            .catch((err) => {return respond(err);})
+        } else {
+          return respond({succes: false,message: "Username or password is incorrect!"});
+        }
+      })
+      .catch((err) => {return respond(err);
+      });
+  }
 
   function authenticate(msg, respond) {
     let email = msg.email;
@@ -109,9 +126,40 @@ module.exports = function auth(options) {
       });
   }
 
+function verifyNormalLogin(msg, respond) {
+    act("entity:user,get:email", {email: msg.email})
+      .then((user) => {
+        
+        this.user = user;
+        if (user.succes) {
+                return act("role:hash,cmd:comparePasswords", {password: msg.password,hash: this.user.password})
+                  .then((authenticated) => {
+                    if (authenticated.succes) {
+                      return act("entity:user-mfa,change:flags", {normal: 1,uuid: msg.uuid})
+                        .then((userMFASession) => {
+                          console.log(userMFASession);
+                          return act("role:auth,mfa:check", {email: msg.email,uuid: userMFASession.uuid})
+                                .then((data) => {return respond(null, data);})
+                        })
+                        .catch((err) => {
+                          return respond(err, null);
+                        });
+                    } else {
+                      return respond(null, authenticated);
+                    }
+                  })
+                  .catch((err) => {return respond(err);});
+              } else {
+                return respond({succes: false,message: "Username or password is incorrect!"});
+              }
+            })
+            .catch((err) => {return respond(err);})
+  }
  
   this.add({role:"auth",cmd:"authenticate",mfa:"none"}, authenticate);
   this.add({role:"auth",change:"password"}, changePassword);
-  
+  this.add({role:"auth",mfa:"auth"}, authenticateAndSetFlags);
+  this.add({role:"auth",verify:"normal"}, verifyNormalLogin);  
+
 
   };

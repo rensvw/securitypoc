@@ -61,6 +61,7 @@ export class ChooseMfaComponent implements OnInit {
     { id: 3, name: 'Email Authentication', parentId: 1 },
     { id: 4, name: 'Sms Authentication', parentId: 1 },
     { id: 5, name: 'Authenticator App', parentId: 1 },
+    { id: 6, name: 'Telegram Authentication', parentId: 1 },
 ];
  console.log(this.optionsModel);
   }

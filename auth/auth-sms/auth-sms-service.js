@@ -14,6 +14,7 @@ require("seneca")({tag: "auth-sms-service"})
       "role:auth,sms:verify",
       "role:auth,sms:verify-signup",
       "role:auth,signup:sms",
+      "role:auth,login:sms"
       ]
     }],
     bases: BASES,

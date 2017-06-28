@@ -5,12 +5,13 @@ const Promise = require("bluebird");
 const TelegramBot = require('node-telegram-bot-api');
 var act = Promise.promisify(this.act, {context: this})
 
-
-this.add({role:"bot",save:"token"}, saveToken);
-this.add({role:"bot",send:"message"}, sendMessageToBot);
-this.add({role:"bot",send:"message",with:"code"}, sendMessageToBotWithCodeAndSave)
 this.add({role:"auth",login:"telegram",}, authenticateTelegramAndSetFlags)
+this.add({role:"telegram",send:"message",}, sendVerifyMessage)
 this.add({role:"auth",verify:"telegram",}, verifyTelegramCodeMFA)
+this.add({role:"auth",signup:"telegram",}, signupTelegram)
+this.add({role:"auth",signup:"verify-telegram",}, verifyTelegramCodeBySignUp)
+
+
 
 function signupTelegram(msg, respond) {
   let email = msg.email;
@@ -24,20 +25,14 @@ function signupTelegram(msg, respond) {
         return act("role:hash,cmd:comparePasswords", {password: password,hash: user.password})
           .then((authenticated) => {
             if (authenticated.succes) {
-
-                return act("entity:user-mfa,crud:user", {email: email,mail: 1,sms: 1,app: 1,normal:1,telegram:0})
-                .then((userMFASession) => {
-                    this.user = user;
-                  if (user.succes) {
-                  act("entity:user-telegram,crud:user", {email: email,token:token})
-                  .then((user)=>{
-                     return act("role:bot,send:message,with:code",{ email:this.user.email, uuid: this.userMFASession.uuid })         
-                    .then((response) => {return respond(response);})
-                    .catch((err) => {return respond(err);})   
+                  act("role:bot,save:token", {email: email,token:token})
+                    .then((response) => {return respond({
+                      succes: true,
+                      redirectTo: "subscribeTelegramChat"
+                    });
                   })
-                     
-                    
-                  } else {
+                    .catch((err) => {return respond(err);})               
+                    } else {
                     return respond(null,user);
                   }
                 })
@@ -51,12 +46,10 @@ function signupTelegram(msg, respond) {
             return respond(err,null);
           })
       }
-    }).catch((err) => {
-      return respond(err,null);
-    })
 }
 
-function verifySMSCodeBySignUp(msg, respond) {
+
+function verifyTelegramCodeBySignUp(msg, respond) {
   let uuid = msg.uuid;
   let code = msg.code;
   let seneca = this;
@@ -68,10 +61,10 @@ function verifySMSCodeBySignUp(msg, respond) {
         let newTime = moment(user.session.timeCreated).add(4, "m");
         if (newTime > moment()) {
           if (code == user.session.code) {
-            return act("entity:user-mfa,change:flags", {uuid: msg.uuid,sms: 1})
+            return act("entity:user-mfa,change:flags", {uuid: msg.uuid,telegram: 1})
               .then((data) => {
                 if (data.succes) {
-                  return act("entity:user,update:flags", {email: data.email,sms: 1})
+                  return act("entity:user,update:flags", {email: data.email,telegram: 1})
                     .then((response) => {
                       return respond({succes: true,returnToken: true,user: {email: response.email,},message: "All codes are correct, welcome!"});})
                     .catch((err) => {return respond(err);})
@@ -91,6 +84,26 @@ function verifySMSCodeBySignUp(msg, respond) {
     .catch(function (err) {return respond(err);})
 }
 
+function sendVerifyMessage(msg, respond) {
+    let seneca = this;
+    
+          return act("entity:user-mfa,crud:user", {email: this.user.email,mail: 1,sms: 1,app: 1,normal: 1,telegram:1})
+              .then((userMFASession) => {
+                this.userMFASession = userMFASession;
+                return act("entity:user-telegram,get:email",{email:this.user.email})
+                .then((user)=>{
+                    return act("role:bot,send:message,with:code",{ email:this.user.email, uuid: this.userMFASession.uuid })         
+                    .then((response) => {return respond(response);})
+                    .catch((err) => {return respond(err);})          
+                })
+                .catch((err) => {return respond(err);})
+              })
+            .catch((err) => {
+              return respond(err);
+            })
+        
+    
+  }
 
 function authenticateTelegramAndSetFlags(msg, respond) {
     let seneca = this;
@@ -160,72 +173,3 @@ function verifyTelegramCodeMFA(msg, respond) {
     })
 }
 
-function subscribeChatID(token,email,respond){
-    const bot = new TelegramBot(token,{polling: true});
-    bot.onText(/\/subscribe/, (msg, match) => {
-        const chatId = msg.chat.id;
-
-        act("entity:user-telegram,crud:user",{chatId: msg.chat.id, email: email})
-        .then((data)=>{ return respond ({ succes:true, user: data }) })
-        .catch((err)=>{ return respond (err,null) })
-
-        bot.sendMessage(chatId, 'Your chat ID has been saved!');
-    });
-
-}
-
-function sendMessageToBotWithCodeAndSave(msg,respond){
-    act("role:generate,cmd:code")
-        .then((generatedCode) => {
-            this.generatedCode = generatedCode
-            return act("entity:user-telegram,crud:user", {
-                email: msg.email,
-                code: generatedCode.code,
-                uuid: msg.uuid,
-            })
-        .then((userTelegramSession) => {
-            this.userTelegramSession = userTelegramSession;
-            if (userTelegramSession.succes) {
-                return act("role:bot,send:message",{ 
-                    email: msg.email, 
-                    message: "Hello, your verification code is: " + this.generatedCode.code })
-            .then((messageSent) => {
-                return respond({
-                    uuid: this.userTelegramSession.uuid,
-                    message: messageSent.message,
-                    redirectTo: "verifyTelegramPage",
-                    succes: true
-                });
-            })
-            .catch((err) => { return respond(err) })
-        } else {
-            return respond({ succes: false, message: "User could not be found!"})
-            }
-        })
-        .catch((err) => { respond(err) })
-    })
-    .catch((err) => {respond(err) })
-}
-
-
-function sendMessageToBot(msg,respond){
-    act("entity:user-telegram,get:email", { email: msg.email })
-    .then((user) => { 
-        const bot = new TelegramBot(user.token);
-        bot.sendMessage(user.chatId, msg.message);
-        return respond({ succes: true, message: "Message has been sent!"})
-     })
-    .catch((err) => { return respond(err,null) })
-}
-
-function saveToken(msg,respond){
-    const token = msg.token;
-    act("entity:user-telegram,crud:user",{token: msg.token,email: msg.email})
-    .then((data)=>{ 
-        subscribeChatID(data.token,msg.email,respond);        
-        return respond ({ succes:true, user: data }) })
-    .catch((err)=>{ return respond (err,null) })
-}
-
-
-}

@@ -20,7 +20,7 @@
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
           <a class="dropdown-item" [routerLink]="['settings/phonenumber']">Phonenumber</a>
-          <!--<a class="dropdown-item" [routerLink]="['login']">Email</a>-->
+          <a class="dropdown-item" [routerLink]="['settings/telegram']">Telegram</a>
           <a class="dropdown-item" [routerLink]="['settings/change-password']">Password</a>
           <a class="dropdown-item" [routerLink]="['settings/authenticator']">Authenticator app</a>          
         </div>
@@ -28,7 +28,6 @@
 
       <li class="nav-item">
         <a (click)="_authService.logout()" class= "nav-link" *ngIf="_authService.isAuthenticated()" [routerLink]="['choose-mfa']" routerLinkActive="active">Logout</a>
-        
       </li>
       </ul>
   </div>

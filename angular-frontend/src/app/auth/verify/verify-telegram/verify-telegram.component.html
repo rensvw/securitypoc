@@ -1,12 +1,12 @@
 <div class="card">
-  <h3 class="card-header">Verify your account with a text message!</h3>
+  <h3 class="card-header">Verify your account with a telegram message!</h3>
   <div class="card-block">
 <form [formGroup]="verifyForm" (ngSubmit)="verify(verifyForm.value)">
 
        <div class="form-group" >
-        <label>Please fill in the code you've received in a text message:</label>
+        <label>Please fill in the code you've received on your telegram account:</label>
         <input class="form-control" type="text" placeholder="code" [formControl]="verifyForm.controls['code']" >
-        <div *ngIf="verifyForm.controls['code'].hasError('required') && verifyForm.controls['code'].touched" class="alert alert-danger">You must enter the code which has been sent to your phone number!</div>
+        <div *ngIf="verifyForm.controls['code'].hasError('required') && verifyForm.controls['code'].touched" class="alert alert-danger">You must enter the code which has been sent to your telegram account!</div>
         <div *ngIf="verifyForm.controls['code'].hasError('minlength') && verifyForm.controls['code'].touched" class="alert alert-danger">The code needs to be exactly 6 digits long!</div>
         <div *ngIf="verifyForm.controls['code'].hasError('maxlength') && verifyForm.controls['code'].touched" class="alert alert-danger">The code needs to be exactly 6 digits long!</div>
       </div>

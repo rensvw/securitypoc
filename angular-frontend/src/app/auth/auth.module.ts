@@ -7,7 +7,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AuthRoutingModule } from './auth-routing.module';
 
-import { LoginComponent } from './login/login.component';
+import { LoginComponent } from './login/login-normal/login.component';
 import { ProfileComponent } from './profile/profile.component';
 import { SignupComponent } from './signup/signup/signup.component';
 import { SignupSmsComponent } from './signup/signup-sms/signup-sms.component';
@@ -26,6 +26,12 @@ import { LoginEmailComponent } from './login/login-email/login-email.component';
 import { VerifyNormalComponent } from './verify/verify-normal/verify-normal.component';
 import { LoginSmsComponent } from './login/login-sms/login-sms.component';
 import { LoginAppComponent } from './login/login-app/login-app.component';
+import { LoginTelegramComponent } from './login/login-telegram/login-telegram.component';
+import { VerifyTelegramComponent } from './verify/verify-telegram/verify-telegram.component';
+import { SignupTelegramComponent } from './signup/signup-telegram/signup-telegram.component';
+import { SignupVerifyTelegramComponent } from './signup/signup-verify/verify-telegram/verify-telegram.component';
+import { SignupTelegramSubscribeComponent } from './signup/signup-telegram-subscribe/signup-telegram-subscribe.component';
+
 
 export function authHttpServiceFactory(http: Http, options: RequestOptions) {
   return new AuthHttp(new AuthConfig({tokenName: 'token',
@@ -50,7 +56,7 @@ export function authHttpServiceFactory(http: Http, options: RequestOptions) {
         MultiselectDropdownModule,
         QRCodeModule],
     exports: [],
-    declarations: [LoginComponent, ProfileComponent, SignupComponent, SignupSmsComponent, SignupAppComponent, SignupVerifyAppComponent,SignupVerifyEmailComponent,SignupVerifySmsComponent, ChangePasswordComponent, VerifySmsComponent, VerifyEmailComponent, VerifyAppComponent, ChooseMfaComponent, LoginEmailComponent, VerifyNormalComponent, LoginSmsComponent, LoginAppComponent]
+    declarations: [LoginComponent, ProfileComponent, SignupComponent, SignupSmsComponent, SignupAppComponent, SignupVerifyAppComponent,SignupVerifyEmailComponent,SignupVerifySmsComponent, ChangePasswordComponent, VerifySmsComponent, VerifyEmailComponent, VerifyAppComponent, ChooseMfaComponent, LoginEmailComponent, VerifyNormalComponent, LoginSmsComponent, LoginAppComponent, LoginTelegramComponent, VerifyTelegramComponent, SignupTelegramComponent,SignupVerifyTelegramComponent, SignupTelegramSubscribeComponent]
 })
 
 export class AuthModule {

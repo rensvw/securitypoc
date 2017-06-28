@@ -1,0 +1,22 @@
+<div class="card">
+  <h3 class="card-header">{{pageTitle}}</h3>
+  <div class="card-block">
+
+   <form [formGroup]="loginForm" (ngSubmit)="authenticate(loginForm.value)">
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input required formControlName='email' type="text" class="form-control" placeholder="Email" />
+      <div *ngIf="loginForm.controls['email'].hasError('required') && loginForm.controls['email'].touched" class="alert alert-danger">You must provide an email address!</div>
+        <div *ngIf="loginForm.controls['email'].hasError('email') && loginForm.controls['email'].touched" class="alert alert-danger">You must enter a legit email address!</div>
+      
+    </div>
+      <button type="button" class="btn btn-primary" (click)="goBack()">Back</button>
+
+        <button type="submit" [disabled]="loginForm.invalid" class="btn btn-primary pull-right">Next</button>
+
+      </form>
+      
+
+  </div>
+
+</div>

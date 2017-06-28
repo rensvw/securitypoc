@@ -76,6 +76,32 @@ module.exports = function authenticatorAppAuth(option) {
 
     }
 
+    function authenticateAppAndSetFlags(msg, respond) {
+    let seneca = this;
+    act("entity:user,get:email", {
+        email: msg.email
+      })
+      .then((user) => {
+        this.user = user;
+        if (!user.succes) {
+          return respond({
+            succes: false,
+            message: "User could not been found!"
+          });
+        } else {
+          return act("entity:user-mfa,crud:user", {email: this.user.email,mail: msg.mail,sms: msg.sms,app: msg.app,normal: msg.normal,telegram: msg.telegram})
+              .then((userMFASession) => {
+                return respond({succes: true,message: "Authenticator app session started!",uuid: userMFASession.uuid,redirectTo: "verifyAppPage"});
+              })
+            .catch((err) => {
+              return respond(err);
+            })
+        }})
+        .catch((err) => {
+        return respond(err);
+      });   
+  }
+
     function verifyToken(msg, respond) {
         let uuid = msg.uuid;
         let code = msg.code;
@@ -293,5 +319,6 @@ module.exports = function authenticatorAppAuth(option) {
     this.add({role: "auth",app: "verify"}, verifyAppCode);
     this.add({role: "auth",create: "uri"}, createUri);
     this.add({role: "auth",verify: "uri"}, verifyUriAndSaveToAccount);
+    this.add({role:"auth",login:"app"}, authenticateAppAndSetFlags);
 
 }

@@ -11,6 +11,8 @@ require("seneca")({tag: "auth-service"})
       pins: [
       "role:auth,change:password",
       "role:auth,cmd:authenticate,mfa:none",
+      "role:auth,mfa:auth", 
+      "role:auth,verify:normal",
       ]
     }],
     bases: BASES,

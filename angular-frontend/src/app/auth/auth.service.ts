@@ -15,23 +15,29 @@ export class AuthService {
 
     currentUser: any;
     private _authenticateUrl = '/api/login';
-    private _authenticateEmailUrl = 'api/login/email'
-    private _authenticateSMSUrl = 'api/login/sms'
-    private _authenticateAppUrl = 'api/login/app'
+    private _authenticateEmailUrl = 'api/login/email';
+    private _authenticateSMSUrl = 'api/login/sms';
+    private _authenticateAppUrl = 'api/login/app';
+    private _authenticateTelegramUrl = '/api/login/telegram';
+    private _verifySubscribedTelegramChat = '/api/signup/send/telegram';
 
     private _signupUrlEmail = '/api/signup/email';
     private _signupUrlSMS = '/api/signup/sms';
+    private _signupUrlTelegram = '/api/signup/telegram';
 
-    private _createUriApp = '/api/signup/app/create/uri'
-    private _changePassword = '/api/settings/change-password'
+    private _createUriApp = '/api/signup/app/create/uri';
+    private _changePassword = '/api/settings/change-password';
 
     private _verifySMSUrl = '/api/verify/sms';
     private _verifyEmailUrl = '/api/verify/email';
     private _verifyAppUrl = '/api/verify/app';   
     private _verifyNormalUrl = '/api/verify/normal'
+    private _verifyTelegramUrl = '/api/verify/telegram'
+
     private _verifySignupSMSUrl = '/api/signup/verify/sms';
     private _verifySignupEmailUrl = '/api/signup/verify/email';
     private _verifySignupAppUrl = '/api/signup/verify/app';
+    private _verifySignupTelegramUrl = '/api/signup/verify/telegram';
 
     public token: string;
     private uuid;
@@ -143,6 +149,72 @@ export class AuthService {
              )
      }
 
+     createUserTelegram(user) {
+         return this._http.post(this._signupUrlTelegram, user) // ...using post request
+             .map((res: Response) => res.json())
+             .subscribe(
+                 data => {
+                     this.redirectTo = data.redirectTo;
+                     this.uuid = data.uuid;
+                     if(data.succes == false){
+                         alert(data.message)
+                     }
+                 },
+                 error => {
+                     console.log(error)
+                     alert("This token is already registered!")
+                 },
+                 () => {
+                     switch (this.redirectTo) {
+                         case "home":
+                             this._router.navigate(['home']);
+                             break;
+                         case "subscribeTelegramChat":
+                             this._router.navigate(['signup/subscribe/telegram'], {
+                                 queryParams: {
+                                     uuid: this.uuid,
+                                     verify: "telegram"
+                                 }
+                             });
+                             break;
+                     }
+                 }
+             )
+     }
+
+      verifySubscriptionTelegram(user) {
+         return this._http.post(this._verifySubscribedTelegramChat, user) // ...using post request
+             .map((res: Response) => res.json())
+             .subscribe(
+                 data => {
+                     this.redirectTo = data.redirectTo;
+                     this.uuid = data.uuid;
+                     if(data.succes == false){
+                         alert(data.message)
+                     }
+                 },
+                 error => {
+                     console.log(error)
+                     alert("Something wen't wrong!")
+                 },
+                 () => {
+                     switch (this.redirectTo) {
+                         case "home":
+                             this._router.navigate(['home']);
+                             break;
+                         case "verifyTelegramPage":
+                             this._router.navigate(['signup/verify/telegram'], {
+                                 queryParams: {
+                                     uuid: this.uuid,
+                                     verify: "telegram"
+                                 }
+                             });
+                             break;
+                     }
+                 }
+             )
+     }
+
      createUserApp(settings) {
 
          return this._http.post(this._verifySignupAppUrl, settings) // ...using post request
@@ -215,6 +287,14 @@ export class AuthService {
                                  }
                              });
                 break;
+            }else if(options[x]==6){
+                // app
+                this._router.navigate(['login/telegram'], {
+                                 queryParams: {
+                                     mfa: options
+                                 }
+                             });
+                break;
             }
         }
      }
@@ -273,6 +353,14 @@ export class AuthService {
                                  queryParams: {
                                      uuid: this.uuid,
                                      verify: "app"
+                                 }
+                             });
+                             break;
+                        case "verifyTelegramPage":
+                             this._router.navigate(['verify/telegram'], {
+                                 queryParams: {
+                                     uuid: this.uuid,
+                                     verify: "telegram"
                                  }
                              });
                              break;
@@ -371,6 +459,51 @@ export class AuthService {
              );
      }
 
+     authenticateTelegram(credentials) {
+         const headers = new Headers({
+             'Content-Type': 'application/json'
+         }); // ... Set content type to JSON
+         const options = new RequestOptions({
+             headers: headers
+         }); // Create a request option
+         console.log(credentials)
+         return this._http.post(this._authenticateTelegramUrl, credentials)
+             .map(res => res.json())
+             .subscribe(
+                 data => {
+                     this.redirectTo = data.redirectTo;
+                     this.uuid = data.uuid;
+                     this.mfa = data.mfa;
+                     if(!data.succes){
+                         alert("This telegram account could not been found!");
+                     }
+                     console.log(data)
+                     if (data.token) {
+                         localStorage.setItem('token', data.token);
+                         localStorage.setItem('email', data.email);
+                         localStorage.setItem('name', data.fullName);                         
+                     }
+                 },
+                 error => {
+                     console.log(error)
+                     alert("This phone number doesn't exist!")
+                 },
+                 () => {
+                     switch (this.redirectTo) {
+                         case "verifyTelegramPage":
+                             this._router.navigate(['verify/telegram'], {
+                                 queryParams: {
+                                     uuid: this.uuid,
+                                     verify: "telegram",
+                                     mfa: this.mfa
+                                 }
+                             });
+                             break;
+                     }
+                 }
+             );
+     }
+
      authenticateApp(credentials) {
          const headers = new Headers({
              'Content-Type': 'application/json'
@@ -383,7 +516,6 @@ export class AuthService {
              .map(res => res.json())
              .subscribe(
                  data => {
-                     console.log("DATAAAAAAAAAAAAAAAAA:",data)
                      this.redirectTo = data.redirectTo;
                      this.uuid = data.uuid;
                      this.mfa = data.mfa;
@@ -439,6 +571,9 @@ export class AuthService {
                  break;
              case "normal":
                  this.url = this._verifyNormalUrl;
+                 break;
+            case "telegram":
+                 this.url = this._verifyTelegramUrl;
                  break;
          }
 
@@ -508,6 +643,14 @@ export class AuthService {
                                  }
                              });
                              break;
+                        case "verifyTelegramPage":
+                             this._router.navigate(['verify/telegram'], {
+                                 queryParams: {
+                                     uuid: this.uuid,
+                                     verify: "telegram"
+                                 }
+                             });
+                             break;
                      }
                  }
              );
@@ -532,6 +675,9 @@ export class AuthService {
                  break;
              case "app":
                  this.url = this._verifySignupAppUrl;
+                 break;
+            case "telegram":
+                 this.url = this._verifySignupTelegramUrl;
                  break;
          }
 
@@ -567,6 +713,9 @@ export class AuthService {
                                 break;
                             case "app":
                                 alert("Your authenticator app is verified and registered!")
+                                break;
+                            case "telegram":
+                                alert("Your telegram account is verified and registered!")
                                 break;
                         }
                      this._router.navigate(['home']);

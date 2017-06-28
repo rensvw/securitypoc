@@ -158,6 +158,9 @@ module.exports = function flag( options ) {
           if (msg.normal == undefined){
             var normal = result.flags.normal;
           } 
+          if (msg.telegram == undefined){
+            var telegram = result.flags.telegram;
+          } 
           result.data$({
             flags: {
               sms: sms || msg.sms,

@@ -271,6 +271,20 @@ module.exports = {
        "NODE_ENV": "production"
     }
     
+  },{
+    name        : "telegram",
+    script      : "./telegram/telegram-service.js",
+    watch       : "./telegram",
+    instances : instances,
+    exec_mode : "cluster",
+    env: {
+      "NODE_ENV": "development",
+      
+    },
+    env_production : {
+       "NODE_ENV": "production"
+    }
+    
   },
     // First application
     {

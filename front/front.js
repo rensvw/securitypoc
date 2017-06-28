@@ -142,14 +142,6 @@ server.route({
   }
 })
 
-server.route({
-  method: "POST", path: "/api/signup/verify/email",
-  handler: {
-    wo: {
-      passThrough: true
-    }
-  }
-})
 
 server.route({
   method: "POST", path: "/api/signup/app/create/uri",

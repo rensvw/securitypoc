@@ -101,16 +101,24 @@ server.register([
         {path: "/api/", method: "get"},      
         {path: "/documentation", method: "get"},      
         {path: "/api/login", method: "post"},
+        {path: "/api/login/email", method: "post"},
+        {path: "/api/login/sms", method: "post"},
+        {path: "/api/login/app", method: "post"},
+        {path: "/api/login/telegram", method: "post"},
+        {path: "/api/settings/change-password", method: "post"},
         {path: "/api/logout", method: "get"},
         {path: "/api/signup/email", method: "post"},
         {path: "/api/signup/app/create/uri", method: "post"},
         {path: "/api/signup/sms", method: "post"},
+        {path: "/api/signup/telegram", method: "post"},
         {path: "/api/verify/email", method: "post"},
         {path: "/api/verify/sms", method: "post"},
         {path: "/api/verify/app", method: "post"},
+        {path: "/api/verify/telegram", method: "post"},
         {path: "/api/signup/verify/email", method: "post"},
         {path: "/api/signup/verify/app", method: "post"},
         {path: "/api/signup/verify/sms", method: "post"},
+        {path: "/api/signup/verify/telegram", method: "post"},
         
         
     ],
@@ -167,6 +175,7 @@ const loginWithMFA = (request, reply) => {
   let sms = request.payload.sms;
   let mail = request.payload.mail;
   let app = request.payload.app;
+  let telegram = request.payload.telegram;
   let mfa = request.payload.mfa;
   let normal = request.payload.normal;
   server.seneca.act("role:auth,mfa:auth", {
@@ -176,6 +185,7 @@ const loginWithMFA = (request, reply) => {
     mail: mail,
     app: app,
     normal:normal,
+    telegram: telegram,
     mfa:mfa
   }, function (err, respond) {
     if (err) {
@@ -217,6 +227,7 @@ const loginWithEmail = (request, reply) => {
   let sms = request.payload.sms;
   let mail = request.payload.mail;
   let app = request.payload.app;
+  let telegram = request.payload.telegram;
   let normal = request.payload.normal;
   server.seneca.act("role:auth,login:email", {
     email: email,
@@ -224,6 +235,7 @@ const loginWithEmail = (request, reply) => {
     mail: mail,
     app: app,
     normal: normal,
+    telegram: telegram,    
     mfa: mfa
   }, function (err, respond) {
     if (err) {
@@ -264,6 +276,7 @@ const loginWithSMS = (request, reply) => {
   let sms = request.payload.sms;
   let mail = request.payload.mail;
   let app = request.payload.app;
+  let telegram = request.payload.telegram;
   let normal = request.payload.normal;
   server.seneca.act("role:auth,login:sms", {
     phoneNumber: phoneNumber,
@@ -271,7 +284,57 @@ const loginWithSMS = (request, reply) => {
     mail: mail,
     app: app,
     normal: normal,
+    telegram: telegram,    
     mfa: mfa
+  }, function (err, respond) {
+    if (err) {
+      return reply("yolo");
+    } else if (respond.succes) {
+      if(respond.returnToken){
+        return reply({
+          succes: respond.succes,
+          message: "Welcome!",
+          redirectTo: 'home',
+          email: respond.user.email,
+          fullName: respond.user.fullName,
+          token: createToken(respond.user)
+        });
+      }
+      else{
+        return reply({
+          succes: respond.succes,
+          message: "First step succeeded, lets go to the next one!",
+          redirectTo: respond.redirectTo,
+          uuid: respond.uuid
+        });
+      }
+    } else if (!respond.succes) {
+      return reply(Boom.unauthorized("Username or password is wrong, or you didn't verify the authentication type!"));
+    }
+  });
+};
+
+const loginWithTelegram = (request, reply) => {
+  if (request.auth.isAuthenticated) {
+    return reply({
+      message: "you're already authenticated!"
+    });
+  }
+  let email = request.payload.email;
+  let mfa = request.payload.mfa;
+  let sms = request.payload.sms;
+  let mail = request.payload.mail;
+  let app = request.payload.app;
+  let normal = request.payload.normal;
+  let telegram = request.payload.telegram;
+  server.seneca.act("role:auth,login:telegram", {
+    email: email,
+    sms: sms,
+    mail: mail,
+    app: app,
+    normal: normal,
+    mfa: mfa,
+    telegram: telegram
   }, function (err, respond) {
     if (err) {
       return reply("yolo");
@@ -312,12 +375,14 @@ const loginWithApp = (request, reply) => {
   let mail = request.payload.mail;
   let app = request.payload.app;
   let normal = request.payload.normal;
+  let telegram = request.payload.telegram;
   server.seneca.act("role:auth,login:app", {
     email: email,
     sms: sms,
     mail: mail,
     app: app,
     normal: normal,
+    telegram: telegram,    
     mfa: mfa
   }, function (err, respond) {
     if (err) {
@@ -383,6 +448,42 @@ const verifySMSCodeAndLogin = (request, reply) => {
   });
 };
 
+const verifyTelegramCodeAndLogin = (request, reply) => {
+  if (request.auth.isAuthenticated) {
+    return reply({
+      message: "you're already authenticated!"
+    });
+  }
+  let code = request.payload.code;
+  let uuid = request.payload.uuid;
+  server.seneca.act("role:auth,verify:telegram", {
+    code: code,
+    uuid: uuid
+  }, function (err, respond) {
+    if (err) {
+      reply(err);
+    } else if (respond.succes) {
+    if(respond.returnToken){
+        return reply({
+          succes: respond.succes,
+          message: respond.message,
+          redirectTo: "home",          
+          fullName: respond.user.fullName,
+          email: respond.user.email,
+          token: createToken(respond.user)
+        });
+      }
+      else{
+        return reply(respond);
+      }
+    } else if (!respond.succes) {
+     reply({succes:respond.succes,
+      message: respond.message})
+    }
+  });
+};
+
+
 //Function for logging out!
 const logout = (request, reply) => {
   request.cookieAuth.clear();
@@ -425,6 +526,52 @@ const signUpSMS = (request, reply) => {
     }
   });
 };
+
+const signUpTelegram = (request, reply) => {
+  let email = request.payload.email;
+  let token = request.payload.token;
+  let password = request.payload.password;
+  server.seneca.act("role:auth,signup:telegram", {
+    token: token,
+    email: email,
+    password: password
+  }, function (err, respond) {
+    if (err) {
+      return reply(Boom.badRequest(respond(err, null)));
+    } else {
+      return reply(respond);
+    }
+  });
+};
+
+const signupVerifyTelegram = (request, reply) => {
+  let uuid = request.payload.uuid;
+  let code = request.payload.code;
+  server.seneca.act("role:auth,signup:verify-telegram", {
+    uuid: uuid,
+    code: code
+  }, function (err, respond) {
+    if (err) {
+      reply(err);
+    } else if (respond.succes) {
+      if(respond.returnToken){
+        return reply({
+          succes: respond.succes,
+          message: respond.message,
+          email: respond.user.email,
+          redirectTo: "home",
+        });
+      }
+      else{
+        return reply(respond);
+      }
+    } else if (!respond.succes) {
+     reply({succes:respond.succes,
+      message: respond.message})
+    }
+  });
+};
+
 
 const createUriApp = (request,reply) => {
   
@@ -605,6 +752,32 @@ const signupVerifySMS = (request, reply) => {
   });
 };
 
+const sendTelegramMessage = (request, reply) => {
+  let email = request.payload.email;
+  server.seneca.act("role:telegram,send:message", {
+    email: email,
+  }, function (err, respond) {
+    if (err) {
+      reply(err);
+    } else if (respond.succes) {
+      if(respond.returnToken){
+        return reply({
+          succes: respond.succes,
+          message: respond.message,
+          email: respond.user.email,
+          redirectTo: "home",
+        });
+      }
+      else{
+        return reply(respond);
+      }
+    } else if (!respond.succes) {
+     reply({succes:respond.succes,
+      message: respond.message})
+    }
+  });
+};
+
 const verifyNormalLogin = (request, reply) => {
   let uuid = request.payload.uuid;
   let email = request.payload.email;
@@ -751,6 +924,39 @@ const changePassword = (request, reply) => {
         },
         handler: signupVerifySMS
       }
+    },{
+      method: "POST",
+      path: "/api/signup/verify/telegram",
+      config: {
+        description: "After the telegram message is verified, verifies the telegram account!",
+        notes: "Telegram User created!",
+        tags: ["api"],
+        auth: {
+            strategy: "jwt"
+        },
+        validate: {
+          payload: {
+            uuid: Joi.string().required(),
+            code: Joi.string().required() 
+          }
+        },
+        handler: signupVerifyTelegram
+      }
+    },{
+      method: "POST",
+      path: "/api/signup/send/telegram",
+      config: {
+        description: "Send a telegram message!",
+        notes: "Send a telegram message!",
+        tags: ["api"],
+
+        validate: {
+          payload: {
+            email: Joi.string().required(),
+          }
+        },
+        handler: sendTelegramMessage
+      }
     }, {
       method: "POST",
       path: "/api/login",
@@ -765,6 +971,7 @@ const changePassword = (request, reply) => {
             sms: Joi.number().integer().min(0).max(1).default(1),
             mail: Joi.number().integer().min(0).max(1).default(1),
             app: Joi.number().integer().min(0).max(1).default(1),  
+            telegram: Joi.number().integer().min(0).max(1).default(1),  
             normal: Joi.number().integer().min(0).max(1).default(1),  
             mfa: Joi.array()            
           }
@@ -784,6 +991,7 @@ const changePassword = (request, reply) => {
             sms: Joi.number().integer().min(0).max(1).default(1),
             mail: Joi.number().integer().min(0).max(1).default(1),
             app: Joi.number().integer().min(0).max(1).default(1),  
+            telegram: Joi.number().integer().min(0).max(1).default(1),  
             normal: Joi.number().integer().min(0).max(1).default(1),  
             mfa: Joi.array()
           }
@@ -803,6 +1011,7 @@ const changePassword = (request, reply) => {
             sms: Joi.number().integer().min(0).max(1).default(1),
             mail: Joi.number().integer().min(0).max(1).default(1),
             app: Joi.number().integer().min(0).max(1).default(1),  
+            telegram: Joi.number().integer().min(0).max(1).default(1),  
             normal: Joi.number().integer().min(0).max(1).default(1),  
             mfa: Joi.array()
           }
@@ -822,11 +1031,48 @@ const changePassword = (request, reply) => {
             sms: Joi.number().integer().min(0).max(1).default(1),
             mail: Joi.number().integer().min(0).max(1).default(1),
             app: Joi.number().integer().min(0).max(1).default(1),  
+            telegram: Joi.number().integer().min(0).max(1).default(1),  
             normal: Joi.number().integer().min(0).max(1).default(1),  
             mfa: Joi.array()
           }
         },
         handler: loginWithSMS,
+      }
+    },{
+      method: "POST",
+      path: "/api/login/telegram",
+      config: {
+        description: "Login route for telegram",
+        notes: "Returns true if correctly logged in",
+        tags: ["api"],
+        validate: {
+          payload: {
+            email: Joi.string().required(),
+            sms: Joi.number().integer().min(0).max(1).default(1),
+            mail: Joi.number().integer().min(0).max(1).default(1),
+            app: Joi.number().integer().min(0).max(1).default(1),  
+            normal: Joi.number().integer().min(0).max(1).default(1),  
+            telegram: Joi.number().integer().min(0).max(1).default(1),  
+            mfa: Joi.array()
+          }
+        },
+        handler: loginWithTelegram,
+      }
+    },{
+      method: "POST",
+      path: "/api/verify/telegram",
+      config: {
+        description: "Verify your telegram code when logging in",
+        notes: "Returns a cookie session if authorised",
+        tags: ["api"],
+        validate: {
+          payload: {
+            uuid: Joi.string().required(),
+            code: Joi.string().required()
+          }
+        },
+        handler: verifyTelegramCodeAndLogin,
+        
       }
     }, {
       method: "POST",
@@ -952,6 +1198,22 @@ const changePassword = (request, reply) => {
           }
         },
         handler: signUpSMS,
+      }
+    },{
+      method: "POST",
+      path: "/api/signup/telegram",
+      config: {
+        description: "Registers a new telegram account to the user",
+        notes: "Returns true if the account is created and saved to database",
+        tags: ["api"],
+        validate: {
+          payload: {
+            token: Joi.string().required(),
+            email: Joi.string().email().required(),
+            password: Joi.string().required()
+          }
+        },
+        handler: signUpTelegram,
       }
     }
   ]);

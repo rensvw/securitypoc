@@ -5,11 +5,6 @@ module.exports = function auth(options) {
 
   var act = Promise.promisify(this.act, {context: this})
 
-  this.add({role:"auth",mfa:"auth"}, authenticateAndSetFlags);
-  this.add({role:"auth",verify:"normal"}, verifyNormalLogin);  
-  this.add({role:"auth",login:"email"}, authenticateEmailAndSetFlags);
-  this.add({role:"auth",login:"sms"}, authenticateSMSAndSetFlags);
-  this.add({role:"auth",login:"app"}, authenticateAppAndSetFlags);
   
   this.add({role:"auth",mfa:"check"}, checkFlagsSession);
   this.add({role:"auth",check:"verified"}, checkIfUserVerifiedAuthenticationType);
@@ -34,162 +29,14 @@ module.exports = function auth(options) {
   }
 
 
-function authenticateEmailAndSetFlags(msg, respond) {
-    let email = msg.email;
-    let seneca = this;
-    act("entity:user,get:email", {
-        email: email
-      })
-      .then((user) => {
-        if (!user.succes) {
-          return respond({
-            succes: false,
-            message: "User could not been found!"
-          });
-        } else {
 
-          return act("entity:user-mfa,crud:user", {email: msg.email,mail: msg.mail,sms: msg.sms,app: msg.app,normal: msg.normal,telegram: msg.telegram})
-              .then((userMFASession) => {
-                return act("role:email,cmd:mfa", {uuid: userMFASession.uuid})
-                  .then((response) => {return respond(response);})
-                  .catch((err) => {return respond(err);})
-              })
-            .catch((err) => {
-              return respond(err);
-            })
-        }})
-        .catch((err) => {
-        return respond(err);
-      });
-      
-      
-  }
 
-  function authenticateSMSAndSetFlags(msg, respond) {
-    let seneca = this;
-    act("entity:user,get:phoneNumber", {
-        phoneNumber: msg.phoneNumber
-      })
-      .then((user) => {
-        this.user = user;
-        if (!user.succes) {
-          return respond({
-            succes: false,
-            message: "User could not been found!"
-          });
-        } else {
-          return act("entity:user-mfa,crud:user", {email: this.user.email,mail: msg.mail,sms: msg.sms,app: msg.app,normal: msg.normal,telegram: msg.telegram})
-              .then((userMFASession) => {
-                this.userMFASession = userMFASession;
-                return act("entity:user-sms,get:user",{email:this.user.email})
-                .then((user)=>{
-                    return act("role:sms,cmd:save,send:false", {email: this.user.email,phoneNumber: msg.phoneNumber,countryCode: user.countryCode,uuid: this.userMFASession.uuid})
-                      .then((response) => {return respond(response);})
-                      .catch((err) => {return respond(err);})
-                })
-                .catch((err) => {return respond(err);})
-              })
-            .catch((err) => {
-              return respond(err);
-            })
-        }})
-        .catch((err) => {
-        return respond(err);
-      });   
-  }
+ 
+  
 
-  function authenticateAppAndSetFlags(msg, respond) {
-    let seneca = this;
-    act("entity:user,get:email", {
-        email: msg.email
-      })
-      .then((user) => {
-        this.user = user;
-        if (!user.succes) {
-          return respond({
-            succes: false,
-            message: "User could not been found!"
-          });
-        } else {
-          return act("entity:user-mfa,crud:user", {email: this.user.email,mail: msg.mail,sms: msg.sms,app: msg.app,normal: msg.normal,telegram: msg.telegram})
-              .then((userMFASession) => {
-                return respond({succes: true,message: "Authenticator app session started!",uuid: userMFASession.uuid,redirectTo: "verifyAppPage"});
-              })
-            .catch((err) => {
-              return respond(err);
-            })
-        }})
-        .catch((err) => {
-        return respond(err);
-      });   
-  }
+  
 
-  function authenticateAndSetFlags(msg, respond) {
-    act("entity:user,get:email", {email: msg.email})
-      .then((user) => {
-        this.user = user;
-        if (user.succes) {
-          return act("role:auth,check:verified", {user: user,app: msg.app,sms: msg.sms,mail: msg.mail})
-            .then((message) => {
-              if (message.succes) {
-                return act("role:hash,cmd:comparePasswords", {password: msg.password,hash: this.user.password})
-                  .then((authenticated) => {
-                    if (authenticated.succes) {
-                      return act("entity:user-mfa,crud:user", {email: msg.email,mail: msg.mail,sms: msg.sms,app: msg.app,normal:msg.normal,mfa:msg.mfa,telegram: msg.telegram})
-                        .then((userMFASession) => {
-                          console.log(userMFASession);
-                          return act("role:auth,mfa:check", {email: msg.email,uuid: userMFASession.uuid})
-                                .then((data) => {return respond(null, data);})
-                        })
-                        .catch((err) => {
-                          return respond(err, null);
-                        });
-                    } else {
-                      return respond(null, authenticated);
-                    }
-                  })
-                  .catch((err) => {return respond(err);});
-              } else {
-                return respond({succes: false,message: "Username or password is incorrect!"});
-              }
-            })
-            .catch((err) => {return respond(err);})
-        } else {
-          return respond({succes: false,message: "Username or password is incorrect!"});
-        }
-      })
-      .catch((err) => {return respond(err);
-      });
-  }
-
-  function verifyNormalLogin(msg, respond) {
-    act("entity:user,get:email", {email: msg.email})
-      .then((user) => {
-        this.user = user;
-        if (user.succes) {
-                return act("role:hash,cmd:comparePasswords", {password: msg.password,hash: this.user.password})
-                  .then((authenticated) => {
-                    if (authenticated.succes) {
-                      return act("entity:user-mfa,change:flags", {normal: 1,uuid: msg.uuid})
-                        .then((userMFASession) => {
-                          console.log(userMFASession);
-                          return act("role:auth,mfa:check", {email: msg.email,uuid: userMFASession.uuid})
-                                .then((data) => {return respond(null, data);})
-                        })
-                        .catch((err) => {
-                          return respond(err, null);
-                        });
-                    } else {
-                      return respond(null, authenticated);
-                    }
-                  })
-                  .catch((err) => {return respond(err);});
-              } else {
-                return respond({succes: false,message: "Username or password is incorrect!"});
-              }
-            })
-            .catch((err) => {return respond(err);})
-  }
+  
   
 
   function checkFlagsSession(msg, respond) {
@@ -207,6 +54,12 @@ function authenticateEmailAndSetFlags(msg, respond) {
         } else if (user.flags.mail == null || user.flags.mail == 0) {
 
           act("role:email,cmd:mfa", {uuid: user.uuid})
+            .then((response) => {return respond(response);})
+            .catch((err) => {return respond(err);})
+
+        } else if (user.flags.telegram == null || user.flags.telegram == 0) {
+
+          act("role:bot,send:message,with:code", {uuid: user.uuid,email:user.email})
             .then((response) => {return respond(response);})
             .catch((err) => {return respond(err);})
 

@@ -1,0 +1,30 @@
+<div class="card">
+  <h3 class="card-header">{{pageTitle}}</h3>
+  <div class="card-block">
+   
+    
+    <form [formGroup]="userForm" (ngSubmit)="createUserTelegram(userForm.value)">
+
+       <div class="form-group">
+        <label>Telegram token:</label>
+        <input class="form-control" type="text" placeholder="Telegram token" [formControl]="userForm.controls['token']" >
+         <div *ngIf="userForm.controls['token'].hasError('required') && userForm.controls['token'].touched" class="alert alert-danger">You must provide the token!</div>
+      </div>
+
+      <div class="form-group">
+        <label>Password:</label>
+        <input class="form-control" type="password" placeholder="Password" [formControl]="userForm.controls['password']">
+          <div *ngIf="userForm.controls['password'].hasError('required') && userForm.controls['password'].touched" class="alert alert-danger">You must provide a password!</div>
+        <div *ngIf="userForm.controls['password'].hasError('minlength') && userForm.controls['password'].touched" class="alert alert-danger">The password needs to be at least 8 characters long!</div>
+      </div>
+
+       
+      
+      <button type="submit" [disabled]="userForm.invalid" class="btn btn-primary pull-right">Next</button>
+      </form>
+      
+      
+  </div>
+</div>
+
+

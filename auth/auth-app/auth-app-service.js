@@ -12,7 +12,8 @@ require("seneca")({tag: "auth-app-service"})
       "role:auth,cmd:authenticate,mfa:app", 
       "role:auth,app:verify",
       "role:auth,create:uri",      
-      "role:auth,verify:uri"
+      "role:auth,verify:uri",
+      "role:auth,login:app",
       ]
     }],
     bases: BASES,

@@ -101,11 +101,44 @@ function verifyEmailCodeAtSignup(msg, respond) {
     .catch(function (err) {return respond(err);})
 }
 
+function authenticateEmailAndSetFlags(msg, respond) {
+    let email = msg.email;
+    let seneca = this;
+    act("entity:user,get:email", {
+        email: email
+      })
+      .then((user) => {
+        if (!user.succes) {
+          return respond({
+            succes: false,
+            message: "User could not been found!"
+          });
+        } else {
+
+          return act("entity:user-mfa,crud:user", {email: msg.email,mail: msg.mail,sms: msg.sms,app: msg.app,normal: msg.normal,telegram: msg.telegram})
+              .then((userMFASession) => {
+                console.log("EMAILLLLLLLLLLLLLLLLLLL:", userMFASession)
+                return act("role:email,cmd:mfa", {uuid: userMFASession.uuid})
+                  .then((response) => {return respond(response);})
+                  .catch((err) => {return respond(err);})
+              })
+            .catch((err) => {
+              return respond(err);
+            })
+        }})
+        .catch((err) => {
+        return respond(err);
+      });
+      
+      
+  }
+
 
   this.add({role:"auth",signup:"email"}, signupAndSendMail);     
   this.add({role:"auth",email:"verify"}, verifyEmailCode);
   this.add({role:"auth",signup:"verify-email"}, verifyEmailCodeAtSignup);
-  
+  this.add({role:"auth",login:"email"}, authenticateEmailAndSetFlags);
+
 
 
 }

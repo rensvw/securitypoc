@@ -121,6 +121,40 @@ function verifySMSCodeBySignUp(msg, respond) {
     .catch(function (err) {return respond(err);})
 }
 
+ function authenticateSMSAndSetFlags(msg, respond) {
+    let seneca = this;
+    act("entity:user,get:phoneNumber", {
+        phoneNumber: msg.phoneNumber
+      })
+      .then((user) => {
+        this.user = user;
+        if (!user.succes) {
+          return respond({
+            succes: false,
+            message: "User could not been found!"
+          });
+        } else {
+          return act("entity:user-mfa,crud:user", {email: this.user.email,mail: msg.mail,sms: msg.sms,app: msg.app,normal: msg.normal,telegram: msg.telegram})
+              .then((userMFASession) => {
+                this.userMFASession = userMFASession;
+                return act("entity:user-sms,get:user",{email:this.user.email})
+                .then((user)=>{
+                    return act("role:sms,cmd:save,send:false", {email: this.user.email,phoneNumber: msg.phoneNumber,countryCode: user.countryCode,uuid: this.userMFASession.uuid})
+                      .then((response) => {return respond(response);})
+                      .catch((err) => {return respond(err);})
+                })
+                .catch((err) => {return respond(err);})
+              })
+            .catch((err) => {
+              return respond(err);
+            })
+        }})
+        .catch((err) => {
+        return respond(err);
+      });   
+  }
+
+
 function verifySMSCodeMFA(msg, respond) {
   let uuid = msg.uuid;
   let code = msg.code;
@@ -161,5 +195,6 @@ function verifySMSCodeMFA(msg, respond) {
   this.add({role:"auth",signup:"sms"}, signupAndSendSMS);
   this.add({role:"auth",sms:"verify-signup"}, verifySMSCodeBySignUp);  
   this.add({role:"auth",sms:"verify"}, verifySMSCodeMFA);
+  this.add({role:"auth",login:"sms"}, authenticateSMSAndSetFlags);
 
 }

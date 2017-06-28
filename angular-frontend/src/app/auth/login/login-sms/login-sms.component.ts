@@ -15,7 +15,7 @@ import { CustomValidators } from 'ng2-validation';
 })
 export class LoginSmsComponent implements OnInit {
 
-   pageTitle: string = "Login Page";
+   pageTitle: string = "Login with a phone number";
   credentials
   email: string;
   loginForm;
@@ -56,6 +56,7 @@ export class LoginSmsComponent implements OnInit {
       mail: 1,
       app: 1,
       normal: 1,
+      telegram: 1,
       mfa: this.mfa
     }
         if(this.mfa.includes('2')){
@@ -66,6 +67,9 @@ export class LoginSmsComponent implements OnInit {
         }
         if(this.mfa.includes('5')){
           this.credentials.app = 0;
+        }
+        if(this.mfa.includes('6')){
+          this.credentials.telegram = 0;
         }
     
        this._authService.authenticateSMS(this.credentials);   

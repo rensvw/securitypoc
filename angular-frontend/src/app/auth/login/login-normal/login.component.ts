@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { AuthService } from './../auth.service';
+import { AuthService } from './../../auth.service';
 import { Router, Params, ActivatedRoute} from '@angular/router';
-import { ICredentials } from './../credentials';
+import { ICredentials } from './../../credentials';
 import { IMultiSelectOption, IMultiSelectTexts, IMultiSelectSettings } from 'angular-2-dropdown-multiselect';
 import {FormGroup, FormControl, Validators, FormBuilder, AbstractControl } from '@angular/forms';
 import { CustomValidators } from 'ng2-validation';
@@ -13,7 +13,7 @@ import { CustomValidators } from 'ng2-validation';
 })
 export class LoginComponent implements OnInit {
 
-  pageTitle: string = "Login Page";
+  pageTitle: string = "Login with an authenticator app";
   credentials;
   email: string;
   password: string;
@@ -62,6 +62,7 @@ export class LoginComponent implements OnInit {
       mail: 1,
       app: 1,
       normal: 1,
+      telegram: 1,
       mfa: this.mfa
     }
         if(this.mfa.includes('3')){
@@ -72,6 +73,9 @@ export class LoginComponent implements OnInit {
         }
         if(this.mfa.includes('5')){
           this.credentials.app = 0;
+        }
+        if(this.mfa.includes('6')){
+          this.credentials.telegram = 0;
         }
     
        this._authService.authenticate(this.credentials);   

@@ -8,13 +8,13 @@ import { CustomValidators } from 'ng2-validation';
 
 
 @Component({
-  selector: 'app-login-app',
-  templateUrl: './login-app.component.html',
-  styleUrls: ['./login-app.component.css']
+  selector: 'app-login-telegram',
+  templateUrl: './login-telegram.component.html',
+  styleUrls: ['./login-telegram.component.css']
 })
-export class LoginAppComponent implements OnInit {
+export class LoginTelegramComponent implements OnInit {
 
-   pageTitle: string = "Login with an authenticator app";
+  pageTitle: string = "Login with telegram";
   credentials
   email: string;
   loginForm;
@@ -64,14 +64,14 @@ export class LoginAppComponent implements OnInit {
         if(this.mfa.includes('4')){
           this.credentials.sms = 0;
         }
+        if(this.mfa.includes('5')){
+          this.credentials.app = 0;
+        }
         if(this.mfa.includes('3')){
           this.credentials.mail = 0;
         }
-        if(this.mfa.includes('6')){
-          this.credentials.telegram = 0;
-        }
     
-       this._authService.authenticateApp(this.credentials);   
+       this._authService.authenticateTelegram(this.credentials);   
        console.log(this.credentials)  
       
     }
