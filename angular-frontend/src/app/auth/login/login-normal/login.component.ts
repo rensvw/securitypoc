@@ -13,7 +13,7 @@ import { CustomValidators } from 'ng2-validation';
 })
 export class LoginComponent implements OnInit {
 
-  pageTitle: string = "Login with an authenticator app";
+  pageTitle: string = "Login with username and password";
   credentials;
   email: string;
   password: string;

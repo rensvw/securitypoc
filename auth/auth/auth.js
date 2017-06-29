@@ -127,34 +127,68 @@ function authenticateAndSetFlags(msg, respond) {
   }
 
 function verifyNormalLogin(msg, respond) {
-    act("entity:user,get:email", {email: msg.email})
-      .then((user) => {
-        
-        this.user = user;
-        if (user.succes) {
-                return act("role:hash,cmd:comparePasswords", {password: msg.password,hash: this.user.password})
-                  .then((authenticated) => {
-                    if (authenticated.succes) {
-                      return act("entity:user-mfa,change:flags", {normal: 1,uuid: msg.uuid})
-                        .then((userMFASession) => {
-                          console.log(userMFASession);
-                          return act("role:auth,mfa:check", {email: msg.email,uuid: userMFASession.uuid})
-                                .then((data) => {return respond(null, data);})
-                        })
-                        .catch((err) => {
-                          return respond(err, null);
-                        });
-                    } else {
-                      return respond(null, authenticated);
-                    }
-                  })
-                  .catch((err) => {return respond(err);});
-              } else {
-                return respond({succes: false,message: "Username or password is incorrect!"});
-              }
+  act("entity:user-mfa,get:uuid", {
+      uuid: msg.uuid
+    })
+    .then((user) => {
+      this.user = user;
+      if (user.succes) {
+        if (user.email == msg.email) {
+          return act("entity:user,get:email", {
+              email: msg.email
             })
-            .catch((err) => {return respond(err);})
-  }
+            .then((data) => {
+              return act("role:hash,cmd:comparePasswords", {
+                  password: msg.password,
+                  hash: data.password
+                })
+                .then((authenticated) => {
+                  if (authenticated.succes) {
+                    return act("entity:user-mfa,change:flags", {
+                        normal: 1,
+                        uuid: msg.uuid
+                      })
+                      .then((userMFASession) => {
+                        console.log(userMFASession);
+                        return act("role:auth,mfa:check", {
+                            email: msg.email,
+                            uuid: userMFASession.uuid
+                          })
+                          .then((data) => {
+                            return respond(null, data);
+                          })
+                      })
+                      .catch((err) => {
+                        return respond(err, null);
+                      });
+                  } else {
+                    return respond(null, authenticated);
+                  }
+                })
+                .catch((err) => {
+                  return respond(err);
+                });
+            })
+            .catch((err) => {
+              return respond(err);
+            })
+        } else {
+          return respond({
+            succes: false,
+            message: "Username or password is incorrect!"
+          });
+        }
+      } else {
+        return respond({
+          succes: false,
+          message: "Username or password is incorrect!"
+        });
+      }
+    })
+    .catch((err) => {
+      return respond(err);
+    })
+}
  
   this.add({role:"auth",cmd:"authenticate",mfa:"none"}, authenticate);
   this.add({role:"auth",change:"password"}, changePassword);

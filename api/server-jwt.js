@@ -108,7 +108,7 @@ server.register([
         {path: "/api/settings/change-password", method: "post"},
         {path: "/api/logout", method: "get"},
         {path: "/api/signup/email", method: "post"},
-        {path: "/api/signup/app/create/uri", method: "post"},
+        {path: "/api/signup/app/create/uri", method: "get"},
         {path: "/api/signup/sms", method: "post"},
         {path: "/api/signup/telegram", method: "post"},
         {path: "/api/verify/email", method: "post"},
@@ -119,6 +119,8 @@ server.register([
         {path: "/api/signup/verify/app", method: "post"},
         {path: "/api/signup/verify/sms", method: "post"},
         {path: "/api/signup/verify/telegram", method: "post"},
+        {path: "/api/signup/send/telegram", method: "post"},
+      
         
         
     ],

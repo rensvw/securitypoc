@@ -3,6 +3,7 @@ module.exports = function auth(options) {
 const moment = require("moment");
 const Promise = require("bluebird");
 const TelegramBot = require('node-telegram-bot-api');
+
 var act = Promise.promisify(this.act, {context: this})
 
 this.add({role:"auth",login:"telegram",}, authenticateTelegramAndSetFlags)
@@ -10,8 +11,6 @@ this.add({role:"telegram",send:"message",}, sendVerifyMessage)
 this.add({role:"auth",verify:"telegram",}, verifyTelegramCodeMFA)
 this.add({role:"auth",signup:"telegram",}, signupTelegram)
 this.add({role:"auth",signup:"verify-telegram",}, verifyTelegramCodeBySignUp)
-
-
 
 function signupTelegram(msg, respond) {
   let email = msg.email;
@@ -46,14 +45,13 @@ function signupTelegram(msg, respond) {
             return respond(err,null);
           })
       }
-}
 
 
 function verifyTelegramCodeBySignUp(msg, respond) {
   let uuid = msg.uuid;
   let code = msg.code;
   let seneca = this;
-  act("entity:user-sms,get:uuid", {uuid: uuid})
+  act("entity:user-telegram,get:uuid", {uuid: uuid})
     .then((user) => {
       if (!user) {
         respond(user);
@@ -86,13 +84,13 @@ function verifyTelegramCodeBySignUp(msg, respond) {
 
 function sendVerifyMessage(msg, respond) {
     let seneca = this;
-    
-          return act("entity:user-mfa,crud:user", {email: this.user.email,mail: 1,sms: 1,app: 1,normal: 1,telegram:1})
+          act("entity:user-mfa,crud:user", {email: msg.email,mail: 1,sms: 1,app: 1,normal: 1,telegram:1})
               .then((userMFASession) => {
+                
                 this.userMFASession = userMFASession;
-                return act("entity:user-telegram,get:email",{email:this.user.email})
+                return act("entity:user-telegram,get:email",{email:this.userMFASession.email})
                 .then((user)=>{
-                    return act("role:bot,send:message,with:code",{ email:this.user.email, uuid: this.userMFASession.uuid })         
+                    return act("role:bot,send:message,with:code",{ email:msg.email, uuid: this.userMFASession.uuid, token: this.userMFASession.token })         
                     .then((response) => {return respond(response);})
                     .catch((err) => {return respond(err);})          
                 })
@@ -171,5 +169,7 @@ function verifyTelegramCodeMFA(msg, respond) {
     })
     .catch(function (err) {return respond(err);
     })
+}
+
 }
 

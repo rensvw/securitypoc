@@ -27,7 +27,7 @@ export class VerifyTelegramComponent implements OnInit {
     verifyEmail: boolean = false;
     verifyApp: boolean = false;
     showSpinner = false;
-    
+
 
   ngOnInit() {
 

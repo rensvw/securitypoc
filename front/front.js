@@ -53,6 +53,53 @@ server.route({
 })
 
 server.route({
+  method: "POST", path: "/api/signup/send/telegram",
+  handler: {
+    wo: {
+      passThrough: true
+    }
+  }
+})
+
+
+
+server.route({
+  method: "POST", path: "/api/login/email",
+  handler: {
+    wo: {
+      passThrough: true
+    }
+  }
+})
+
+server.route({
+  method: "POST", path: "/api/login/sms",
+  handler: {
+    wo: {
+      passThrough: true
+    }
+  }
+})
+
+server.route({
+  method: "POST", path: "/api/login/app",
+  handler: {
+    wo: {
+      passThrough: true
+    }
+  }
+})
+
+server.route({
+  method: "POST", path: "/api/login/telegram",
+  handler: {
+    wo: {
+      passThrough: true
+    }
+  }
+})
+
+server.route({
   method: "GET", path: "/api/logout",
   handler: {
     wo: {
@@ -80,6 +127,15 @@ server.route({
 })
 
 server.route({
+  method: "POST", path: "/api/signup/telegram",
+  handler: {
+    wo: {
+      passThrough: true
+    }
+  }
+})
+
+server.route({
   method: "POST", path: "/api/signup/verify/email",
   handler: {
     wo: {
@@ -99,6 +155,15 @@ server.route({
 
 server.route({
   method: "POST", path: "/api/signup/verify/sms",
+  handler: {
+    wo: {
+      passThrough: true
+    }
+  }
+})
+
+server.route({
+  method: "POST", path: "/api/signup/verify/telegram",
   handler: {
     wo: {
       passThrough: true
@@ -142,9 +207,17 @@ server.route({
   }
 })
 
+server.route({
+  method: "POST", path: "/api/verify/telegram",
+  handler: {
+    wo: {
+      passThrough: true
+    }
+  }
+})
 
 server.route({
-  method: "POST", path: "/api/signup/app/create/uri",
+  method: "GET", path: "/api/signup/app/create/uri",
   handler: {
     wo: {
       passThrough: true

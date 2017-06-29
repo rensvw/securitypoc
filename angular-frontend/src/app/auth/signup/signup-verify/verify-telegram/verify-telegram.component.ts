@@ -24,6 +24,7 @@ export class SignupVerifyTelegramComponent implements OnInit {
     signupCredentials;
     verifyForm;
     showSpinner;
+    
 
   ngOnInit() {
     this.verifyForm = this._formBuilder.group({

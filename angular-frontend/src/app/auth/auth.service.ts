@@ -187,6 +187,7 @@ export class AuthService {
              .map((res: Response) => res.json())
              .subscribe(
                  data => {
+                     console.log("YOOO:", user)
                      this.redirectTo = data.redirectTo;
                      this.uuid = data.uuid;
                      if(data.succes == false){
@@ -600,12 +601,8 @@ export class AuthService {
                  error => console.log(error),
                  () => {
                      if (!this.succes) {
-                         alert("The code is incorrect! Please try again!")
-                         return {
-                             succes: false,
-                             message: "The code is incorrect!"
-                         }
-                         
+                         alert("The verification is incorrect! Please try again!")
+                                                 
                      }
                      switch (this.redirectTo) {
                          case "home":

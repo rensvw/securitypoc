@@ -29,6 +29,7 @@ export class SignupTelegramSubscribeComponent implements OnInit {
 
    createUserTelegram() {
      this.data.email = localStorage.getItem('email');
+     console.log(this.data)
      this._authService.verifySubscriptionTelegram(this.data)
    }
 

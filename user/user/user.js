@@ -9,9 +9,9 @@ this.add({"entity":"user","create":"new"}, createUserWhileCheckingForExistingUse
 this.add({"entity":"user","update":"flags"}, updateVerifiedFlags);
 this.add({"entity":"user","change":"password"}, changePassword);
 
- this.add({entity:"user",create:"phone"}, createNewPhoneNumber);
-  this.add({entity:"user",update:"phone"}, updatePhoneNumber);
-  this.add({"entity":"user","crud":"phone"}, updateOrCreateNewPhoneNumber);
+this.add({entity:"user",create:"phone"}, createNewPhoneNumber);
+this.add({entity:"user",update:"phone"}, updatePhoneNumber);
+this.add({"entity":"user","crud":"phone"}, updateOrCreateNewPhoneNumber);
   
 
  const Promise = require("bluebird");

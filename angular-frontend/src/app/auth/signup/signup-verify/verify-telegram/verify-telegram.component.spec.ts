@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { VerifyTelegramComponent } from './verify-telegram.component';
+import { SignupVerifyTelegramComponent } from './verify-telegram.component';
 
-describe('VerifyTelegramComponent', () => {
-  let component: VerifyTelegramComponent;
-  let fixture: ComponentFixture<VerifyTelegramComponent>;
+describe('SignupVerifyTelegramComponent', () => {
+  let component: SignupVerifyTelegramComponent;
+  let fixture: ComponentFixture<SignupVerifyTelegramComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ VerifyTelegramComponent ]
+      declarations: [ SignupVerifyTelegramComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(VerifyTelegramComponent);
+    fixture = TestBed.createComponent(SignupVerifyTelegramComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
