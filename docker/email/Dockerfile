@@ -1,6 +1,6 @@
 FROM shared
 
-ADD email.js .
+ADD email2.js .
 ADD email-service.js .
 ADD templates /templates
 
