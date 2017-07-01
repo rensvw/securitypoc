@@ -31,8 +31,6 @@ export class LoginEmailComponent implements OnInit {
       .queryParams
       .subscribe((params: Params) => {
         this.mfa = params['mfa'];   
-        this.mfa.splice(0,1); 
-        console.log(this.mfa)
     });
 
  
@@ -71,7 +69,6 @@ export class LoginEmailComponent implements OnInit {
         }
     
        this._authService.authenticateEmail(this.credentials);   
-       console.log(this.credentials)  
       
     }
   };

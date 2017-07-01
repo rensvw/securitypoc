@@ -51,7 +51,6 @@ export class SignupVerifyAppComponent implements OnInit {
       code: formValues.code,
       verifyType: this.verifyType
     }
-    console.log(this.signupCredentials);
        this._authService.verifySignup(this.signupCredentials);  
        this.verifyForm.reset()
       };

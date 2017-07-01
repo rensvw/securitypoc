@@ -39,7 +39,6 @@ export class VerifyNormalComponent implements OnInit {
       .subscribe((params: Params) => {
         this.mfa = params['mfa'];   
       //  this.mfa.splice(0,1); 
-        console.log(this.mfa)
     });
 
     this.route
@@ -78,7 +77,6 @@ export class VerifyNormalComponent implements OnInit {
     }
 
        this._authService.verify(this.credentials);   
-       console.log(this.credentials)  
       
     }
   };

@@ -36,8 +36,6 @@ export class LoginComponent implements OnInit {
       .queryParams
       .subscribe((params: Params) => {
         this.mfa = params['mfa'];   
-        this.mfa.splice(0,1); 
-        console.log(this.mfa)
     });
  
     this.loginForm = new FormGroup({
@@ -79,7 +77,6 @@ export class LoginComponent implements OnInit {
         }
     
        this._authService.authenticate(this.credentials);   
-       console.log(this.credentials)  
       
     }
   };
