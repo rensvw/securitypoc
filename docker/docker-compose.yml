@@ -240,8 +240,8 @@ services:
   zipkin:
     networks:
       - securitypoc
+    environment:
+      HOST: "@eth0"
     image: openzipkin/zipkin
     ports:
       - "9411:9411"
-
-  
