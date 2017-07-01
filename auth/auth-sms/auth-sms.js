@@ -15,7 +15,7 @@ function authenticateAndSendSMSCode(msg, respond) {
         return act("role:hash,cmd:comparePasswords", {password: password,hash: user.password})
           .then((authenticated) => {
             if (authenticated.succes) {
-              return act("role:sms,cmd:save,send:false", {email: email})
+              return act("role:sms,cmd:save,send:true", {email: email})
                 .then((result) => {
                   return respond({succes: true,uuid: result.uuid,message: "Username and password are correct, we've send you a code in a text message!"});})
                 .catch((err) => {return respond(err);});
@@ -60,7 +60,7 @@ function signupAndSendSMS(msg, respond) {
                   act("entity:user,crud:phone", {email: msg.email,phoneNumber:phoneNumber})
              
             
-                    return act("role:sms,cmd:save,send:false", {email: email,uuid: user.uuid,phoneNumber: phoneNumber,countryCode: countryCode})
+                    return act("role:sms,cmd:save,send:true", {email: email,uuid: user.uuid,phoneNumber: phoneNumber,countryCode: countryCode})
                       .then((result) => {return respond(null,result);})
                       .catch((err) => {return respond(err,null);})
                   } else {
@@ -139,7 +139,7 @@ function verifySMSCodeBySignUp(msg, respond) {
                 this.userMFASession = userMFASession;
                 return act("entity:user-sms,get:user",{email:this.user.email})
                 .then((user)=>{
-                    return act("role:sms,cmd:save,send:false", {email: this.user.email,phoneNumber: msg.phoneNumber,countryCode: user.countryCode,uuid: this.userMFASession.uuid})
+                    return act("role:sms,cmd:save,send:true", {email: this.user.email,phoneNumber: msg.phoneNumber,countryCode: user.countryCode,uuid: this.userMFASession.uuid})
                       .then((response) => {return respond(response);})
                       .catch((err) => {return respond(err);})
                 })

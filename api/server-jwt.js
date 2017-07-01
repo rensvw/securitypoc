@@ -112,6 +112,7 @@ server.register([
         {path: "/api/signup/sms", method: "post"},
         {path: "/api/signup/telegram", method: "post"},
         {path: "/api/verify/email", method: "post"},
+        {path: "/api/verify/normal", method: "post"},
         {path: "/api/verify/sms", method: "post"},
         {path: "/api/verify/app", method: "post"},
         {path: "/api/verify/telegram", method: "post"},

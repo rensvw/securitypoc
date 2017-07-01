@@ -29,16 +29,6 @@ module.exports = function auth(options) {
   }
 
 
-
-
- 
-  
-
-  
-
-  
-  
-
   function checkFlagsSession(msg, respond) {
     //ROEP HIER DE MICROSERVICE AAN DIE NOG OP 0 STAAT BIJ FLAGS. mAAK HIERNA 1 VAN. 
     // RESPOND IS NIET NODIG OMDAT DE LOSSE MCIROSERVICES ALTIJD DEZE FUNCTIE WEER AAN ROEPEN.
@@ -47,7 +37,7 @@ module.exports = function auth(options) {
         this.user = user;
         if (user.flags.sms == null || user.flags.sms == 0) {
 
-          act("role:sms,cmd:save,send:false", {email: user.email,phoneNumber: msg.phoneNumber,countryCode: msg.countryCode,uuid: user.uuid})
+          act("role:sms,cmd:save,send:true", {email: user.email,phoneNumber: msg.phoneNumber,countryCode: msg.countryCode,uuid: user.uuid})
             .then((response) => {return respond(response);})
             .catch((err) => {return respond(err);})
 

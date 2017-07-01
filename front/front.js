@@ -190,6 +190,15 @@ server.route({
 })
 
 server.route({
+  method: "POST", path: "/api/verify/normal",
+  handler: {
+    wo: {
+      passThrough: true
+    }
+  }
+})
+
+server.route({
   method: "POST", path: "/api/verify/sms",
   handler: {
     wo: {

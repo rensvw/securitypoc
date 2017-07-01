@@ -244,6 +244,8 @@ services:
     ports:
       - "9411:9411"
   angular-frontend:
+    environment:
+      HOST: "eth0"
     image: angular-frontend
     ports:
       - "80-80"

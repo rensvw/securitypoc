@@ -4,10 +4,10 @@ container :
 	docker images | grep angular-frontend
 
 run-single :
-	docker service create --replicas 1 --network securitypoc --publish 8000:8000 --name angular-frontend
+	docker service create --replicas 1 --network securitypoc --publish 80:80 --name angular-frontend
 
 rm-single :
-	docker service rm front
+	docker service rm angular-frontend
 
 clean :
 	rm -f *~
