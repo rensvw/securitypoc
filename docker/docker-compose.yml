@@ -238,8 +238,8 @@ services:
     deploy:
       replicas: 1
   zipkin:
-    environment:
-      HOST: "@eth0"
+    networks:
+      - securitypoc
     image: openzipkin/zipkin
     ports:
       - "9411:9411"
