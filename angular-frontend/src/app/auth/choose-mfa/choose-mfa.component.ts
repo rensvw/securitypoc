@@ -63,18 +63,17 @@ export class ChooseMfaComponent implements OnInit {
     { id: 5, name: 'Authenticator App', parentId: 1 },
     { id: 6, name: 'Telegram Authentication', parentId: 1 },
 ];
- console.log(this.optionsModel);
   }
 
   
   onChange(event) {
-        console.log(this.optionsModel);
+        //console.log(this.optionsModel);
     }
     
   authenticate(formValues){
    
        this._authService.chooseMfa(this.optionsModel);   
-       console.log(this.credentials)  
+       //console.log(this.credentials)  
       }
     
   };
