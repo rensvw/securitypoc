@@ -128,7 +128,6 @@ export class AuthService {
                      }
                  },
                  error => {
-                     console.log(error)
                      alert("This phonenumber is already registered!")
                  },
                  () => {
@@ -161,7 +160,6 @@ export class AuthService {
                      }
                  },
                  error => {
-                     console.log(error)
                      alert("This token is already registered!")
                  },
                  () => {
@@ -187,7 +185,6 @@ export class AuthService {
              .map((res: Response) => res.json())
              .subscribe(
                  data => {
-                     console.log("YOOO:", user)
                      this.redirectTo = data.redirectTo;
                      this.uuid = data.uuid;
                      if(data.succes == false){
@@ -307,7 +304,6 @@ export class AuthService {
          const options = new RequestOptions({
              headers: headers
          }); // Create a request option
-         console.log(credentials)
          return this._http.post(this._authenticateUrl, credentials)
              .map(res => res.json())
              .subscribe(
@@ -317,7 +313,6 @@ export class AuthService {
                      if(!data.succes){
                          alert("The username or password is incorrect!");
                      }
-                     console.log(data)
                      if (data.token) {
                          localStorage.setItem('token', data.token);
                          localStorage.setItem('email', data.email);
@@ -377,7 +372,6 @@ export class AuthService {
          const options = new RequestOptions({
              headers: headers
          }); // Create a request option
-         console.log(credentials)
          return this._http.post(this._authenticateEmailUrl, credentials)
              .map(res => res.json())
              .subscribe(
@@ -388,7 +382,6 @@ export class AuthService {
                      if(!data.succes){
                          alert("This email address could not been found!");
                      }
-                     console.log(data)
                      if (data.token) {
                          localStorage.setItem('token', data.token);
                          localStorage.setItem('email', data.email);
@@ -422,7 +415,6 @@ export class AuthService {
          const options = new RequestOptions({
              headers: headers
          }); // Create a request option
-         console.log(credentials)
          return this._http.post(this._authenticateSMSUrl, credentials)
              .map(res => res.json())
              .subscribe(
@@ -433,7 +425,6 @@ export class AuthService {
                      if(!data.succes){
                          alert("This phone number could not been found!");
                      }
-                     console.log(data)
                      if (data.token) {
                          localStorage.setItem('token', data.token);
                          localStorage.setItem('email', data.email);
@@ -467,7 +458,6 @@ export class AuthService {
          const options = new RequestOptions({
              headers: headers
          }); // Create a request option
-         console.log(credentials)
          return this._http.post(this._authenticateTelegramUrl, credentials)
              .map(res => res.json())
              .subscribe(
@@ -478,7 +468,6 @@ export class AuthService {
                      if(!data.succes){
                          alert("This telegram account could not been found!");
                      }
-                     console.log(data)
                      if (data.token) {
                          localStorage.setItem('token', data.token);
                          localStorage.setItem('email', data.email);
@@ -512,7 +501,6 @@ export class AuthService {
          const options = new RequestOptions({
              headers: headers
          }); // Create a request option
-         console.log(credentials)
          return this._http.post(this._authenticateAppUrl, credentials)
              .map(res => res.json())
              .subscribe(
@@ -523,7 +511,6 @@ export class AuthService {
                      if(!data.succes){
                          alert("This email address could not been found!");
                      }
-                     console.log(data)
                      if (data.token) {
                          localStorage.setItem('token', data.token);
                          localStorage.setItem('email', data.email);
